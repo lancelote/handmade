@@ -1,0 +1,8 @@
+# vim
+*.swp
+
+# build
+build/
+
+# misc/
+misc/raddbg.exe
