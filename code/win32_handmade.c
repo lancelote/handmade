@@ -29,6 +29,20 @@ LRESULT CALLBACK MainWindowCallback(
 			OutputDebugStringA("WM_ACTIVATEAPP\n");
 		} break;
 
+		case WM_PAINT:
+		{
+			PAINTSTRUCT Paint;
+			HDC DeviceContext = BeginPaint(Window, &Paint);
+
+			int X = Paint.rcPaint.left;
+			int Y = Paint.rcPaint.top;
+			int Width = Paint.rcPaint.right - Paint.rcPaint.left;
+			int Height = Paint.rcPaint.bottom - Paint.rcPaint.top;
+
+			PatBlt(DeviceContext, X, Y, Width, Height, WHITENESS);
+			EndPaint(Window, &Paint);
+		} break;
+
 		default:
 		{
 			Result = DefWindowProc(Window, Message, WParam, LParam);
