@@ -65,7 +65,7 @@ int CALLBACK WinMain(
 	WindowClass.lpszClassName = "HandmadeHeroWindowClass";
 
 	if (RegisterClass(&WindowClass)) {
-		HWND WindowHandle = CreateWindowEx(
+		HWND WindowHandle = CreateWindowExA(
 			0,
 			WindowClass.lpszClassName,
 			"Handmade Hero",
@@ -82,7 +82,7 @@ int CALLBACK WinMain(
 		if (WindowHandle) {
 			for (;;) {
 				MSG Message;
-				BOOL MessageResult = GetMessage(
+				BOOL MessageResult = GetMessageA(
 					&Message,
 					0, // any Window which belongs to us
 					0, // get all messages
@@ -91,7 +91,7 @@ int CALLBACK WinMain(
 
 				if (MessageResult > 0) {
 					TranslateMessage(&Message);
-					DispatchMessage(&Message);
+					DispatchMessageA(&Message);
 				} else {
 					break;
 				}
