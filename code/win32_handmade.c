@@ -60,7 +60,6 @@ int CALLBACK WinMain(
 ) {
 	WNDCLASS WindowClass = {};
 
-	WindowClass.style = CS_OWNDC|CS_HREDRAW|CS_VREDRAW;
 	WindowClass.lpfnWndProc = MainWindowCallback;
 	WindowClass.hInstance = Instance;
 	WindowClass.lpszClassName = "HandmadeHeroWindowClass";
