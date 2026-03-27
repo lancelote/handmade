@@ -1,5 +1,15 @@
 #include <windows.h>
 
+#define bool int
+#define true 1
+#define false 0
+#define internal static
+#define local_persist static
+#define global_variable static
+
+// todo: global for now
+global_variable bool Running;
+
 LRESULT CALLBACK MainWindowCallback(
 	HWND Window,
 	UINT Message,
@@ -16,12 +26,14 @@ LRESULT CALLBACK MainWindowCallback(
 
 		case WM_DESTROY:
 		{
-			OutputDebugStringA("WM_DESTROY\n");
+			// todo: handle this as an error - recreate window?
+			Running = false;
 		} break;
 
 		case WM_CLOSE:
 		{
-			OutputDebugStringA("WM_CLOSE\n");
+			// todo: handle this with a message to the user?
+			Running = false;
 		} break;
 
 		case WM_ACTIVATEAPP:
@@ -39,7 +51,8 @@ LRESULT CALLBACK MainWindowCallback(
 			int Width = Paint.rcPaint.right - Paint.rcPaint.left;
 			int Height = Paint.rcPaint.bottom - Paint.rcPaint.top;
 
-			PatBlt(DeviceContext, X, Y, Width, Height, WHITENESS);
+			local_persist DWORD Operation = WHITENESS;
+			PatBlt(DeviceContext, X, Y, Width, Height, Operation);
 			EndPaint(Window, &Paint);
 		} break;
 
@@ -80,7 +93,8 @@ int CALLBACK WinMain(
 			0
 		);
 		if (WindowHandle) {
-			for (;;) {
+			Running = true;
+			while(Running) {
 				MSG Message;
 				BOOL MessageResult = GetMessageA(
 					&Message,
