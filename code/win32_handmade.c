@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <stdint.h>
 
 #define bool int
 #define true 1
@@ -7,21 +8,122 @@
 #define local_persist static
 #define global_variable static
 
+typedef int8_t int8;
+typedef int16_t int16;
+typedef int32_t int32;
+typedef int64_t int64;
+
+typedef uint8_t uint8;
+typedef uint16_t uint16;
+typedef uint32_t uint32;
+typedef uint64_t uint64;
+
 // todo: global for now
 global_variable bool Running;
 
-LRESULT CALLBACK MainWindowCallback(
+global_variable BITMAPINFO BitmapInfo;
+global_variable void *BitmapMemory;
+global_variable int BitmapWidth;
+global_variable int BitmapHeight;
+
+internal void
+Win32ResizeDIBSection(int Width, int Height)
+{
+	if (BitmapMemory)
+	{
+		VirtualFree(
+			BitmapMemory,
+			0, // size, must be 0 for `MEM_RELEASE`, as it frees the entire region allocated with `VirtualAlloc`
+			MEM_RELEASE);
+	}
+	
+	BitmapWidth = Width;
+	BitmapHeight = Height;
+
+	BitmapInfo.bmiHeader.biSize = sizeof(BitmapInfo.bmiHeader);
+	BitmapInfo.bmiHeader.biWidth = BitmapWidth;
+	BitmapInfo.bmiHeader.biHeight = -BitmapHeight; // negative for top-down DIB
+	BitmapInfo.bmiHeader.biPlanes = 1;
+	BitmapInfo.bmiHeader.biBitCount = 32;
+	BitmapInfo.bmiHeader.biCompression = BI_RGB;
+
+	int BytesPerPixel = 4;
+	int BitmapMemorySize = BitmapWidth * BitmapHeight * BytesPerPixel;
+	BitmapMemory = VirtualAlloc(0, BitmapMemorySize, MEM_COMMIT, PAGE_READWRITE);
+	
+	int Pitch = Width * BytesPerPixel;
+	uint8 *Row = (uint8 *)BitmapMemory;
+	for (int Y = 0; Y < BitmapHeight; ++Y)
+	{
+		uint8 *Pixel = (uint8 *)Row;
+		for (int X = 0; X < BitmapWidth; ++X)
+		{
+			/*
+							 0  1  2  3  - byte order number (Pixel + 1, etc.)
+			pixel in memory: 00 00 00 00
+							 BB GG RR pp = red, green, blue, padding
+			*/
+			
+			// blue
+			*Pixel = 0;
+			++Pixel;
+			
+			// green
+			*Pixel = 0;
+			++Pixel;
+			
+			// red
+			*Pixel = 255;
+			++Pixel;
+			
+			// padding
+			*Pixel = 0;
+			++Pixel;
+		}
+		
+		Row += Pitch;
+	}
+}
+
+internal void
+Win32UpdateWindow(
+	HDC DeviceContext,
+	RECT *WindowRect,
+	int X,
+	int Y,
+	int Width,
+	int Height)
+{
+	int WindowWidth = WindowRect->right - WindowRect->left;
+	int WindowHeight = WindowRect->bottom - WindowRect->top;
+	
+	StretchDIBits(
+		DeviceContext,
+		0, 0, BitmapWidth, BitmapHeight,
+		0, 0, WindowWidth, WindowHeight,
+		BitmapMemory,
+		&BitmapInfo,
+		DIB_RGB_COLORS,
+		SRCCOPY);
+}
+
+LRESULT CALLBACK
+Win32MainWindowCallback(
 	HWND Window,
 	UINT Message,
 	WPARAM WParam,
-	LPARAM LParam
-) {
+	LPARAM LParam)
+{
 	LRESULT Result = 0;
 
-	switch(Message) {
+	switch (Message) {
 		case WM_SIZE:
 		{
-			OutputDebugStringA("WM_SIZE\n");
+			RECT ClientRect;
+			GetClientRect(Window, &ClientRect);
+			int Width = ClientRect.right - ClientRect.left;
+			int Height = ClientRect.bottom - ClientRect.top;
+			Win32ResizeDIBSection(Width, Height);
 		} break;
 
 		case WM_DESTROY:
@@ -50,9 +152,11 @@ LRESULT CALLBACK MainWindowCallback(
 			int Y = Paint.rcPaint.top;
 			int Width = Paint.rcPaint.right - Paint.rcPaint.left;
 			int Height = Paint.rcPaint.bottom - Paint.rcPaint.top;
+			
+			RECT ClientRect;
+			GetClientRect(Window, &ClientRect);
 
-			local_persist DWORD Operation = WHITENESS;
-			PatBlt(DeviceContext, X, Y, Width, Height, Operation);
+			Win32UpdateWindow(DeviceContext, &ClientRect, X, Y, Width, Height);
 			EndPaint(Window, &Paint);
 		} break;
 
@@ -65,15 +169,16 @@ LRESULT CALLBACK MainWindowCallback(
 	return(Result);
 }
 
-int CALLBACK WinMain(
+int CALLBACK
+WinMain(
 	HINSTANCE Instance,
 	HINSTANCE PrevInstance,
 	LPSTR CommandLine,
-	int ShowCode
-) {
+	int ShowCode)
+{
 	WNDCLASS WindowClass = {};
 
-	WindowClass.lpfnWndProc = MainWindowCallback;
+	WindowClass.lpfnWndProc = Win32MainWindowCallback;
 	WindowClass.hInstance = Instance;
 	WindowClass.lpszClassName = "HandmadeHeroWindowClass";
 
@@ -90,8 +195,7 @@ int CALLBACK WinMain(
 			0,
 			0,
 			Instance,
-			0
-		);
+			0);
 		if (WindowHandle) {
 			Running = true;
 			while(Running) {
