@@ -210,18 +210,21 @@ WinMain(
 			Running = true;
 			while(Running) {
 				MSG Message;
-				BOOL MessageResult = GetMessageA(
+				while(PeekMessage(
 					&Message,
-					0, // any Window which belongs to us
-					0, // get all messages
-					0  // get all messages
-				);
+				        0,        // any window which belongs to us
+					0,        // get all messages
+					0,        // get all messages
+					PM_REMOVE // remove message from queue
+				))
+				{
+					if(Message.message == WM_QUIT)
+					{
+						Running = false;
+					}
 
-				if (MessageResult > 0) {
 					TranslateMessage(&Message);
 					DispatchMessageA(&Message);
-				} else {
-					break;
 				}
 			}
 		} else {
