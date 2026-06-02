@@ -92,20 +92,20 @@ Win32ResizeDIBSection(int Width, int Height)
 	int BitmapMemorySize = BitmapWidth * BitmapHeight * BytesPerPixel;
 	BitmapMemory = VirtualAlloc(0, BitmapMemorySize, MEM_COMMIT, PAGE_READWRITE);
 
-	RenderWeirdGradient(0, 0);
+	// todo: probably clear this to black
 }
 
 internal void
 Win32UpdateWindow(
 	HDC DeviceContext,
-	RECT *WindowRect,
+	RECT *ClientRect,
 	int X,
 	int Y,
 	int Width,
 	int Height)
 {
-	int WindowWidth = WindowRect->right - WindowRect->left;
-	int WindowHeight = WindowRect->bottom - WindowRect->top;
+	int WindowWidth = ClientRect->right - ClientRect->left;
+	int WindowHeight = ClientRect->bottom - ClientRect->top;
 	
 	StretchDIBits(
 		DeviceContext,
@@ -193,7 +193,7 @@ WinMain(
 	WindowClass.lpszClassName = "HandmadeHeroWindowClass";
 
 	if (RegisterClass(&WindowClass)) {
-		HWND WindowHandle = CreateWindowExA(
+		HWND Window = CreateWindowExA(
 			0,
 			WindowClass.lpszClassName,
 			"Handmade Hero",
@@ -206,7 +206,10 @@ WinMain(
 			0,
 			Instance,
 			0);
-		if (WindowHandle) {
+		if (Window) {
+			int XOffset = 0;
+			int YOffset = 0;
+
 			Running = true;
 			while(Running) {
 				MSG Message;
@@ -226,6 +229,27 @@ WinMain(
 					TranslateMessage(&Message);
 					DispatchMessageA(&Message);
 				}
+
+				RenderWeirdGradient(XOffset, YOffset);
+
+				HDC DeviceContext = GetDC(Window);
+
+				RECT ClientRect;
+				GetClientRect(Window, &ClientRect);
+				int WindowWidth = ClientRect.right - ClientRect.left;
+				int WindowHeight = ClientRect.bottom - ClientRect.top;
+
+				Win32UpdateWindow(
+					DeviceContext,
+					&ClientRect,
+					0,
+					0,
+					WindowWidth,
+					WindowHeight);
+
+				ReleaseDC(Window, DeviceContext);
+
+				++XOffset;
 			}
 		} else {
 			// todo: logging
