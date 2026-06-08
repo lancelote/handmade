@@ -30,6 +30,21 @@ global_variable int BytesPerPixel = 4;
 internal void
 RenderWeirdGradient(int XOffset, int YOffset)
 {
+	/*
+	MEMORY ORDER:   RR GG BB xx
+	LOADED IN:      xx BB GG RR
+	WANTED:         xx RR GG BB
+	MEMORY ORDER:   BB GG RR xx
+	*/
+
+	/*
+	   		WIDTH ->
+			Width & BytesPerPixes -> pointer to the next row
+	BitmapMemory -> 0 BB GG RR xx BB GG RR xx BB GG RR xx ...	
+	BM + Pitch      1 BB GG RR xx ...
+			2 BB GG RR xx ...
+			...
+	*/
 	int Width = BitmapWidth;
 	int Height = BitmapHeight;
 
@@ -157,6 +172,11 @@ Win32MainWindowCallback(
 
 			Win32UpdateWindow(DeviceContext, &ClientRect, X, Y, Width, Height);
 			EndPaint(Window, &Paint);
+		} break;
+
+		case WM_SETCURSOR:
+		{
+			SetCursor(0);
 		} break;
 
 		default:
