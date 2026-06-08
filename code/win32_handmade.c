@@ -174,11 +174,6 @@ Win32MainWindowCallback(
 			EndPaint(Window, &Paint);
 		} break;
 
-		case WM_SETCURSOR:
-		{
-			SetCursor(0);
-		} break;
-
 		default:
 		{
 			Result = DefWindowProc(Window, Message, WParam, LParam);
