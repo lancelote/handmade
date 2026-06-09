@@ -79,7 +79,8 @@ Win32ResizeDIBSection(int Width, int Height)
 	{
 		VirtualFree(
 			BitmapMemory,
-			0, // size, must be 0 for `MEM_RELEASE`, as it frees the entire region allocated with `VirtualAlloc`
+			0, // size, must be 0 for `MEM_RELEASE`
+			   // as it frees the entire region allocated with `VirtualAlloc`
 			MEM_RELEASE);
 	}
 	
@@ -192,6 +193,7 @@ WinMain(
 {
 	WNDCLASS WindowClass = {};
 
+	WindowClass.style = CS_HREDRAW | CS_VREDRAW; /* redraw the whole window on resize */
 	WindowClass.lpfnWndProc = Win32MainWindowCallback;
 	WindowClass.hInstance = Instance;
 	WindowClass.lpszClassName = "HandmadeHeroWindowClass";
