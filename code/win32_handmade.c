@@ -165,11 +165,6 @@ Win32MainWindowCallback(
 	switch (Message) {
 		case WM_SIZE:
 		{
-			win32_window_dimension Dimension = Win32GetWindowDimension(Window);
-			Win32ResizeDIBSection(
-				&GlobalBackBuffer,
-				Dimension.Width,
-				Dimension.Height);
 		} break;
 
 		case WM_DESTROY:
@@ -229,6 +224,8 @@ WinMain(
 	int ShowCode)
 {
 	WNDCLASS WindowClass = {};
+	
+	Win32ResizeDIBSection(&GlobalBackBuffer, 1280, 720);
 
 	WindowClass.style = CS_HREDRAW | CS_VREDRAW; // redraw the whole window on resize
 	WindowClass.lpfnWndProc = Win32MainWindowCallback;
