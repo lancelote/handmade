@@ -145,8 +145,8 @@ Win32DisplayBufferInWindow(
 {
 	StretchDIBits(
 		DeviceContext,
-		0, 0, Buffer.Width, Buffer.Height,
-		0, 0, WindowWidth, WindowHeight,
+		0, 0, WindowWidth, WindowHeight,   // destination
+		0, 0, Buffer.Width, Buffer.Height, // source
 		Buffer.Memory,
 		&Buffer.Info,
 		DIB_RGB_COLORS,
