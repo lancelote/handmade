@@ -143,6 +143,7 @@ Win32DisplayBufferInWindow(
 	int Width,
 	int Height)
 {
+	// todo: correct the aspect ration
 	StretchDIBits(
 		DeviceContext,
 		0, 0, WindowWidth, WindowHeight,   // destination
