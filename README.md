@@ -18,4 +18,5 @@
   - [x] Day 001qa: Setting Up the Windows Build - Q&A
   - [x] Day 002: Opening a Win32 Window
   - [x] Day 003: Allocating a Back Buffer
-  - [ ] Day 004: Animating the Back Buffer
+  - [x] Day 004: Animating the Back Buffer
+  - [ ] Day 005: Windows Graphics Review
