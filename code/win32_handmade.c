@@ -265,7 +265,7 @@ WinMain(
 				MSG Message;
 				while(PeekMessage(
 					&Message,
-				        0,        // any window which belongs to us
+					0,        // any window which belongs to us
 					0,        // get all messages
 					0,        // get all messages
 					PM_REMOVE // remove message from queue
