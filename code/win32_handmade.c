@@ -29,7 +29,7 @@ typedef struct win32_offscreen_buffer
 } win32_offscreen_buffer;
 
 // todo: global for now
-global_variable bool Running;
+global_variable bool GlobalRunning;
 global_variable win32_offscreen_buffer GlobalBackBuffer;
 
 typedef struct win32_window_dimension
@@ -119,7 +119,10 @@ Win32ResizeDIBSection(
 
 	Buffer->Info.bmiHeader.biSize = sizeof(Buffer->Info.bmiHeader);
 	Buffer->Info.bmiHeader.biWidth = Buffer->Width;
-	Buffer->Info.bmiHeader.biHeight = -Buffer->Height; // negative for top-down DIB
+	
+	// negative for top-down DIB, meaning the first three bytes of the image
+	// are the color of the top left pixel in the beatmap
+	Buffer->Info.bmiHeader.biHeight = -Buffer->Height;
 	Buffer->Info.bmiHeader.biPlanes = 1;
 	Buffer->Info.bmiHeader.biBitCount = 32;
 	Buffer->Info.bmiHeader.biCompression = BI_RGB;
@@ -127,6 +130,7 @@ Win32ResizeDIBSection(
 	int BitmapMemorySize = Buffer->Width * Buffer->Height * Buffer->BytesPerPixel;
 	Buffer->Memory = VirtualAlloc(0, BitmapMemorySize, MEM_COMMIT, PAGE_READWRITE);
 
+	// how many bytes the pointer should go for the next row
 	Buffer->Pitch = Width * Buffer->BytesPerPixel;
 
 	// todo: probably clear this to black
@@ -171,13 +175,13 @@ Win32MainWindowCallback(
 		case WM_DESTROY:
 		{
 			// todo: handle this as an error - recreate window?
-			Running = false;
+			GlobalRunning = false;
 		} break;
 
 		case WM_CLOSE:
 		{
 			// todo: handle this with a message to the user?
-			Running = false;
+			GlobalRunning = false;
 		} break;
 
 		case WM_ACTIVATEAPP:
@@ -228,16 +232,21 @@ WinMain(
 	
 	Win32ResizeDIBSection(&GlobalBackBuffer, 1280, 720);
 
-	WindowClass.style = CS_HREDRAW | CS_VREDRAW; // redraw the whole window on resize
-	WindowClass.lpfnWndProc = Win32MainWindowCallback;
-	WindowClass.hInstance = Instance;
+	WindowClass.style = CS_HREDRAW | CS_VREDRAW;       // redraw the whole window on resize
+	WindowClass.lpfnWndProc = Win32MainWindowCallback; // what to call for message processing
+	WindowClass.hInstance = Instance;                  // in which process is the callback
 	WindowClass.lpszClassName = "HandmadeHeroWindowClass";
 
+	// Windows will make its own copy of WindowClass
+	// hence - no need to worry about it going out of scope
+	// not true for any object you pass by pointer
 	if (RegisterClass(&WindowClass)) {
 		HWND Window = CreateWindowExA(
 			0,
 			WindowClass.lpszClassName,
 			"Handmade Hero",
+			// WS_OVERLAPPEDWINDOW - the window has title bar, close cl
+			// WS_VISIBLE          - visible on startup
 			WS_OVERLAPPEDWINDOW|WS_VISIBLE,
 			CW_USEDEFAULT,
 			CW_USEDEFAULT,
@@ -251,8 +260,8 @@ WinMain(
 			int XOffset = 0;
 			int YOffset = 0;
 
-			Running = true;
-			while(Running) {
+			GlobalRunning = true;
+			while(GlobalRunning) {
 				MSG Message;
 				while(PeekMessage(
 					&Message,
@@ -264,7 +273,7 @@ WinMain(
 				{
 					if(Message.message == WM_QUIT)
 					{
-						Running = false;
+						GlobalRunning = false;
 					}
 
 					TranslateMessage(&Message);
