@@ -191,6 +191,7 @@ Win32MainWindowCallback(
 
 		case WM_PAINT:
 		{
+			// Windows asks us explicitly to repaint
 			PAINTSTRUCT Paint;
 			HDC DeviceContext = BeginPaint(Window, &Paint);
 
