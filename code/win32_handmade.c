@@ -233,7 +233,9 @@ WinMain(
 	
 	Win32ResizeDIBSection(&GlobalBackBuffer, 1280, 720);
 
-	WindowClass.style = CS_HREDRAW | CS_VREDRAW;       // redraw the whole window on resize
+	// CS_HREDRAW | CS_VREDRAW - redraw the whole window on resize
+	// CS_OWNDC                - each window has its own device context
+	WindowClass.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
 	WindowClass.lpfnWndProc = Win32MainWindowCallback; // what to call for message processing
 	WindowClass.hInstance = Instance;                  // in which process is the callback
 	WindowClass.lpszClassName = "HandmadeHeroWindowClass";
@@ -258,6 +260,12 @@ WinMain(
 			Instance,
 			0);
 		if (Window) {
+			// ask Windows to give us a handle so we can issue draw calls
+			//
+			// since we specified CS_OWNDC, we can get one device context
+			// and use it forever as it is not shared
+			HDC DeviceContext = GetDC(Window);
+
 			int XOffset = 0;
 			int YOffset = 0;
 
@@ -282,9 +290,6 @@ WinMain(
 				}
 
 				RenderWeirdGradient(GlobalBackBuffer, XOffset, YOffset);
-
-				// ask Windows to give us a handle so we can issue draw calls
-				HDC DeviceContext = GetDC(Window);
 				
 				win32_window_dimension Dimension = Win32GetWindowDimension(Window);
 
@@ -297,8 +302,6 @@ WinMain(
 					0,
 					Dimension.Width,
 					Dimension.Height);
-
-				ReleaseDC(Window, DeviceContext);
 
 				++XOffset;
 			}
