@@ -74,7 +74,7 @@ RenderWeirdGradient(
 	*/
 
 	// todo: see what the optimizer does, and whether Buffer should be a pointer
-	uint8 *Row = (uint8 *)Buffer.Memory;
+	uint8 *Row = (uint8 *)Buffer.Memory;  // should be uint8 to add pitch (in bytes)
 	for (int Y = 0; Y < Buffer.Height; ++Y)
 	{
 		uint32 *Pixel = (uint32 *)Row;
@@ -89,7 +89,7 @@ RenderWeirdGradient(
 			*/
 			uint8 Blue = (X + BlueOffset);
 			uint8 Green = (Y + GreenOffset);
-			*Pixel++ = (Green << 8) | Blue;
+			*Pixel++ = (Green << 8) | Blue; // will be incremented by 4 bytes
 		}
 		
 		Row += Buffer.Pitch;
@@ -282,6 +282,7 @@ WinMain(
 
 				RenderWeirdGradient(GlobalBackBuffer, XOffset, YOffset);
 
+				// ask Windows to give us a handle so we can issue draw calls
 				HDC DeviceContext = GetDC(Window);
 				
 				win32_window_dimension Dimension = Win32GetWindowDimension(Window);
