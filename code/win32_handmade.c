@@ -43,7 +43,7 @@ Win32GetWindowDimension(HWND Window)
 {
 	win32_window_dimension Result;
 	
-	RECT ClientRect;
+	RECT ClientRect; // writable region of a Window
 	GetClientRect(Window, &ClientRect);
 	Result.Width = ClientRect.right - ClientRect.left;
 	Result.Height = ClientRect.bottom - ClientRect.top;
