@@ -142,11 +142,7 @@ Win32DisplayBufferInWindow(
 	HDC DeviceContext,
 	int WindowWidth,
 	int WindowHeight,
-	win32_offscreen_buffer Buffer,
-	int X,
-	int Y,
-	int Width,
-	int Height)
+	win32_offscreen_buffer Buffer)
 {
 	// todo: correct the aspect ration
 	StretchDIBits(
@@ -206,11 +202,7 @@ Win32MainWindowCallback(
 				DeviceContext,
 				Dimension.Width,
 				Dimension.Height,
-				GlobalBackBuffer,
-				X,
-				Y,
-				Width,
-				Height);
+				GlobalBackBuffer);
 			EndPaint(Window, &Paint);
 		} break;
 
@@ -298,11 +290,7 @@ WinMain(
 					DeviceContext,
 					Dimension.Width,
 					Dimension.Height,
-					GlobalBackBuffer,
-					0,
-					0,
-					Dimension.Width,
-					Dimension.Height);
+					GlobalBackBuffer);
 
 				++XOffset;
 			}
