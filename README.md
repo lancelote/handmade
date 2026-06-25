@@ -4,7 +4,8 @@
 
 - [ ] Handmade Hero
   - [ ] ...
-  - [ ] Day 005: Windows Graphics Review
+  - [ ] Day 006: Gamepad and Keyboard Input
+  - [x] Day 005: Windows Graphics Review
   - [x] Day 004: Animating the Back Buffer
   - [x] Day 003: Allocating a Back Buffer
   - [x] Day 002: Opening a Win32 Window
