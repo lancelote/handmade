@@ -20,6 +20,7 @@ typedef uint64_t uint64;
 
 typedef struct win32_offscreen_buffer
 {
+	// pixels are always 32-bits wide, memory order BB GG RR XX
 	BITMAPINFO Info;
 	void *Memory;
 	int Width;
