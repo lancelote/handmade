@@ -103,6 +103,7 @@ Win32ResizeDIBSection(
 	int Width,
 	int Height)
 {
+	// todo: play with stretch modes
 	// todo: maybe don't free first, free after, then free first if that fails
 	if (Buffer->Memory)
 	{
