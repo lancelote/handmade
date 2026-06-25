@@ -25,7 +25,6 @@ typedef struct win32_offscreen_buffer
 	int Width;
 	int Height;
 	int Pitch;
-	int BytesPerPixel;
 } win32_offscreen_buffer;
 
 // todo: global for now
@@ -116,7 +115,8 @@ Win32ResizeDIBSection(
 	
 	Buffer->Width = Width;
 	Buffer->Height = Height;
-	Buffer->BytesPerPixel = 4;
+	
+	int BytesPerPixel = 4;
 
 	Buffer->Info.bmiHeader.biSize = sizeof(Buffer->Info.bmiHeader);
 	Buffer->Info.bmiHeader.biWidth = Buffer->Width;
@@ -128,11 +128,11 @@ Win32ResizeDIBSection(
 	Buffer->Info.bmiHeader.biBitCount = 32;
 	Buffer->Info.bmiHeader.biCompression = BI_RGB;
 
-	int BitmapMemorySize = Buffer->Width * Buffer->Height * Buffer->BytesPerPixel;
+	int BitmapMemorySize = Buffer->Width * Buffer->Height * BytesPerPixel;
 	Buffer->Memory = VirtualAlloc(0, BitmapMemorySize, MEM_COMMIT, PAGE_READWRITE);
 
 	// how many bytes the pointer should go for the next row
-	Buffer->Pitch = Width * Buffer->BytesPerPixel;
+	Buffer->Pitch = Width * BytesPerPixel;
 
 	// todo: probably clear this to black
 }
