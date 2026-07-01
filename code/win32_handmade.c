@@ -52,12 +52,12 @@ win32_window_dimension
 Win32GetWindowDimension(HWND Window)
 {
     win32_window_dimension Result;
-    
+
     RECT ClientRect; // writable region of a Window
     GetClientRect(Window, &ClientRect);
     Result.Width = ClientRect.right - ClientRect.left;
     Result.Height = ClientRect.bottom - ClientRect.top;
-    
+
     return(Result);
 }
 
@@ -77,7 +77,7 @@ RenderWeirdGradient(
     /*
             WIDTH ->
             Width & BytesPerPixel -> pointer to the next row
-    BitmapMemory -> 0 BB GG RR xx BB GG RR xx BB GG RR xx ...   
+    BitmapMemory -> 0 BB GG RR xx BB GG RR xx BB GG RR xx ...
     BM + Pitch      1 BB GG RR xx ...
             2 BB GG RR xx ...
             ...
@@ -101,7 +101,7 @@ RenderWeirdGradient(
             uint8 Green = (Y + GreenOffset);
             *Pixel++ = (Green << 8) | Blue; // will be incremented by 4 bytes
         }
-        
+
         Row += Buffer.Pitch;
     }
 
@@ -123,15 +123,15 @@ Win32ResizeDIBSection(
                // as it frees the entire region allocated with `VirtualAlloc`
             MEM_RELEASE);
     }
-    
+
     Buffer->Width = Width;
     Buffer->Height = Height;
-    
+
     int BytesPerPixel = 4;
 
     Buffer->Info.bmiHeader.biSize = sizeof(Buffer->Info.bmiHeader);
     Buffer->Info.bmiHeader.biWidth = Buffer->Width;
-    
+
     // negative for top-down DIB, meaning the first three bytes of the image
     // are the color of the top left pixel in the beatmap
     Buffer->Info.bmiHeader.biHeight = -Buffer->Height;
@@ -234,7 +234,7 @@ WinMain(
     int ShowCode)
 {
     WNDCLASS WindowClass = {};
-    
+
     Win32ResizeDIBSection(&GlobalBackBuffer, 1280, 720);
 
     // CS_HREDRAW | CS_VREDRAW - redraw the whole window on resize
@@ -326,7 +326,7 @@ WinMain(
                 }
 
                 RenderWeirdGradient(GlobalBackBuffer, XOffset, YOffset);
-                
+
                 win32_window_dimension Dimension = Win32GetWindowDimension(Window);
 
                 Win32DisplayBufferInWindow(
