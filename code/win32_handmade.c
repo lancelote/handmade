@@ -306,6 +306,9 @@ WinMain(
                         bool BButton = (Pad->wButtons & XINPUT_GAMEPAD_B);
                         bool XButton = (Pad->wButtons & XINPUT_GAMEPAD_X);
                         bool YButton = (Pad->wButtons & XINPUT_GAMEPAD_Y);
+
+                        int16 StickX = Pad->sThumbLX;
+                        int16 StickY = Pad->sThumbLY;
                     }
                     else
                     {
