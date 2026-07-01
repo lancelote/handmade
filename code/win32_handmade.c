@@ -29,6 +29,15 @@ typedef struct win32_offscreen_buffer
     int Pitch;
 } win32_offscreen_buffer;
 
+typedef DWORD WINAPI x_input_get_state(DWORD dwUserIndex, XINPUT_STATE *pState);
+typedef DWORD WINAPI x_input_set_state(DWORD dwUserIndex, XINPUT_VIBRATION *pVibration);
+
+global_variable x_input_get_state *XInputGetState_;
+global_variable x_input_set_state *XInputSetState_;
+
+#define XInputGetState XInputGetState_
+#define XInputSetState XInputSetState_
+
 // todo: global for now
 global_variable bool GlobalRunning;
 global_variable win32_offscreen_buffer GlobalBackBuffer;
@@ -288,11 +297,11 @@ WinMain(
                 for(DWORD ControllerIndex = 0; ControllerIndex < XUSER_MAX_COUNT; ++ControllerIndex)
                 {
                     XINPUT_STATE ControllerState;
-                    if(XInoutGetState(ControllerIndex, &ControllerState) == ERROR_SUCCESS)
+                    if(XInputGetState(ControllerIndex, &ControllerState) == ERROR_SUCCESS)
                     {
                         // this controller is plugged in
                         // todo: see if `ControllerState.dwPacketNumber` increments too rapidly
-                        XINPUT_GAMEPAD *Pad = ControllerState.Gamepad;
+                        XINPUT_GAMEPAD *Pad = &ControllerState.Gamepad;
 
                         bool Up = (Pad->wButtons & XINPUT_GAMEPAD_DPAD_UP);
                         bool Down = (Pad->wButtons & XINPUT_GAMEPAD_DPAD_DOWN);
