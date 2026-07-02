@@ -29,26 +29,46 @@ typedef struct win32_offscreen_buffer
     int Pitch;
 } win32_offscreen_buffer;
 
-typedef DWORD WINAPI x_input_get_state(DWORD dwUserIndex, XINPUT_STATE *pState);
-typedef DWORD WINAPI x_input_set_state(DWORD dwUserIndex, XINPUT_VIBRATION *pVibration);
-
-global_variable x_input_get_state *XInputGetState_;
-global_variable x_input_set_state *XInputSetState_;
-
-#define XInputGetState XInputGetState_
-#define XInputSetState XInputSetState_
-
-// todo: global for now
-global_variable bool GlobalRunning;
-global_variable win32_offscreen_buffer GlobalBackBuffer;
-
 typedef struct win32_window_dimension
 {
     int Width;
     int Height;
 } win32_window_dimension;
 
-win32_window_dimension
+// todo: global for now
+global_variable bool GlobalRunning;
+global_variable win32_offscreen_buffer GlobalBackBuffer;
+
+// controller support is optional, so we need a trick in case we didn't compile
+// with required libraries for it
+#define X_INPUT_GET_STATE(name) DWORD WINAPI name(DWORD dwUserIndex, XINPUT_STATE *pState)
+#define X_INPUT_SET_STATE(name) DWORD WINAPI name(DWORD dwUserIndex, XINPUT_VIBRATION *pVibration)
+
+typedef X_INPUT_GET_STATE(x_input_get_state);
+typedef X_INPUT_SET_STATE(x_input_set_state);
+
+X_INPUT_GET_STATE(XInputGetStateStub)
+{
+    return(0);
+}
+
+X_INPUT_SET_STATE(XInputSetStateStub)
+{
+    return(0);
+}
+
+global_variable x_input_get_state *XInputGetState_ = XInputGetStateStub;
+global_variable x_input_set_state *XInputSetState_ = XInputSetStateStub;
+
+#define XInputGetState XInputGetState_
+#define XInputSetState XInputSetState_
+
+internal void
+Win32LoadXInput(void)
+{
+}
+
+internal win32_window_dimension
 Win32GetWindowDimension(HWND Window)
 {
     win32_window_dimension Result;
