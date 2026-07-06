@@ -66,7 +66,7 @@ global_variable x_input_set_state *XInputSetState_ = XInputSetStateStub;
 internal void
 Win32LoadXInput(void)
 {
-    HMODULE XInputLibrary = LoadLibrary("XInput1_4.dll");
+    HMODULE XInputLibrary = LoadLibraryA("XInput1_4.dll");
     if(XInputLibrary)
     {
         XInputGetState = (x_input_get_state *)GetProcAddress(XInputLibrary, "XInputGetState");
@@ -324,7 +324,7 @@ WinMain(
 {
     Win32LoadXInput();
 
-    WNDCLASS WindowClass = {};
+    WNDCLASSA WindowClass = {};
 
     Win32ResizeDIBSection(&GlobalBackBuffer, 1280, 720);
 
