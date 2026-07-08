@@ -413,10 +413,8 @@ WinMain(
                         int16 StickX = Pad->sThumbLX;
                         int16 StickY = Pad->sThumbLY;
 
-                        if(AButton)
-                        {
-                            YOffset += 2;
-                        }
+                        XOffset += StickX >> 12;
+                        YOffset += StickY >> 12;
                     }
                     else
                     {
@@ -433,8 +431,6 @@ WinMain(
                     DeviceContext,
                     Dimension.Width,
                     Dimension.Height);
-
-                ++XOffset;
             }
         } else {
             // todo: logging
