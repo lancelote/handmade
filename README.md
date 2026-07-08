@@ -4,7 +4,8 @@
 
 - [ ] Handmade Hero
   - [ ] ...
-  - [ ] Day 006: Gamepad and Keyboard Input
+  - [ ] Day 007: Initializing DirectSound
+  - [x] Day 006: Gamepad and Keyboard Input
   - [x] Day 005: Windows Graphics Review
   - [x] Day 004: Animating the Back Buffer
   - [x] Day 003: Allocating a Back Buffer
