@@ -66,7 +66,13 @@ global_variable x_input_set_state *XInputSetState_ = XInputSetStateStub;
 internal void
 Win32LoadXInput(void)
 {
+    // todo: Windows 7 only has 1.3
     HMODULE XInputLibrary = LoadLibraryA("XInput1_4.dll");
+    if(!XInputLibrary)
+    {
+        XInputLibrary = LoadLibraryA("XInput1_3.dll");
+    }
+
     if(XInputLibrary)
     {
         XInputGetState = (x_input_get_state *)GetProcAddress(XInputLibrary, "XInputGetState");
