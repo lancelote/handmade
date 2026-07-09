@@ -49,12 +49,12 @@ typedef X_INPUT_SET_STATE(x_input_set_state);
 
 X_INPUT_GET_STATE(XInputGetStateStub)
 {
-    return(0);
+    return(ERROR_DEVICE_NOT_CONNECTED);
 }
 
 X_INPUT_SET_STATE(XInputSetStateStub)
 {
-    return(0);
+    return(ERROR_DEVICE_NOT_CONNECTED);
 }
 
 global_variable x_input_get_state *XInputGetState_ = XInputGetStateStub;
