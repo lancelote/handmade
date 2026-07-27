@@ -268,7 +268,7 @@ Win32ResizeDIBSection(
     Buffer->Info.bmiHeader.biCompression = BI_RGB;
 
     int BitmapMemorySize = Buffer->Width * Buffer->Height * BytesPerPixel;
-    Buffer->Memory = VirtualAlloc(0, BitmapMemorySize, MEM_COMMIT, PAGE_READWRITE);
+    Buffer->Memory = VirtualAlloc(0, BitmapMemorySize, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
 
     // how many bytes the pointer should go for the next row
     Buffer->Pitch = Width * BytesPerPixel;
