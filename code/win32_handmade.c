@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <stdint.h>
 #include <xinput.h>
+#include <dsound.h>
 
 #define bool int
 #define true 1
@@ -63,6 +64,10 @@ global_variable x_input_set_state *XInputSetState_ = XInputSetStateStub;
 #define XInputGetState XInputGetState_
 #define XInputSetState XInputSetState_
 
+// sound is optional
+#define DIRECT_SOUND_CREATE(name) HRESULT WINAPI name(LPCGUID pcGuidDEvice, LPDIRECTSOUND *ppDS, LPUNKNOWN pUnkOuter)
+typedef DIRECT_SOUND_CREATE(direct_sound_create);
+
 internal void
 Win32LoadXInput(void)
 {
@@ -70,6 +75,7 @@ Win32LoadXInput(void)
     HMODULE XInputLibrary = LoadLibraryA("XInput1_4.dll");
     if(!XInputLibrary)
     {
+        // todo: diagnostic
         XInputLibrary = LoadLibraryA("XInput1_3.dll");
     }
 
@@ -80,6 +86,93 @@ Win32LoadXInput(void)
 
         XInputSetState = (x_input_set_state *)GetProcAddress(XInputLibrary, "XInputSetState");
         if(!XInputSetState) {XInputSetState = XInputSetStateStub;}
+
+        // todo: diagnostic
+    }
+    else
+    {
+        // todo: diagnostic
+    }
+}
+
+internal void
+Win32InitDSound(HWND Window, int32 SamplesPerSecond, int32 BufferSize)
+{
+    // load the library
+    HMODULE DSoundLibrary = LoadLibraryA("dsound.dll");
+
+    if(DSoundLibrary)
+    {
+        // get a DirectSound object
+        direct_sound_create *DirectSoundCreate = (direct_sound_create *)GetProcAddress(DSoundLibrary, "DirectSoundCreate");
+
+        // todo: double-check if it works on XP - DirectSound8 or 7?
+        LPDIRECTSOUND DirectSound;
+        if(DirectSoundCreate && SUCCEEDED(DirectSoundCreate(0, &DirectSound, 0)))
+        {
+            WAVEFORMATEX WaveFormat = {};
+            WaveFormat.wFormatTag = WAVE_FORMAT_PCM;
+            WaveFormat.nChannels = 2;
+            WaveFormat.nSamplesPerSec = SamplesPerSecond;
+            WaveFormat.nBlockAlign = (WaveFormat.nChannels * WaveFormat.wBitsPerSample) / 8;
+            WaveFormat.nAvgBytesPerSec = WaveFormat.nSamplesPerSec * WaveFormat.nBlockAlign;
+            WaveFormat.wBitsPerSample = 16;
+            WaveFormat.cbSize = 0;
+
+            if(SUCCEEDED(DirectSound->lpVtbl->SetCooperativeLevel(DirectSound, Window, DSSCL_PRIORITY)))
+            {
+                DSBUFFERDESC BufferDescription = {};
+                BufferDescription.dwSize = sizeof(BufferDescription);
+                // todo: DSBCAPS_GLOBALFOCUS?
+                BufferDescription.dwFlags = DSBCAPS_PRIMARYBUFFER;
+
+                // "create" a primary buffer
+                LPDIRECTSOUNDBUFFER PrimaryBuffer;
+                if(SUCCEEDED(DirectSound->lpVtbl->CreateSoundBuffer(DirectSound, &BufferDescription, &PrimaryBuffer, 0)))
+                {
+                    HRESULT Error = PrimaryBuffer->lpVtbl->SetFormat(PrimaryBuffer, &WaveFormat);
+                    if(SUCCEEDED(Error))
+                    {
+                        OutputDebugStringA("primary buffer format was set\n");
+                    }
+                    else
+                    {
+                        // todo: diagnostic
+                    }
+                }
+                else
+                {
+                    // todo: diagnostic
+                }
+            }
+            else
+            {
+                // todo: diagnostic
+            }
+
+            // "create" a secondary buffer
+            DSBUFFERDESC BufferDescription = {};
+            BufferDescription.dwSize = sizeof(BufferDescription);
+            // todo: DSBCAPS_GETCURRENTPOSITION2
+            BufferDescription.dwFlags = 0;
+            BufferDescription.dwBufferBytes = BufferSize;
+            BufferDescription.lpwfxFormat = &WaveFormat;
+            
+            LPDIRECTSOUNDBUFFER SecondaryBuffer;
+            HRESULT Error = DirectSound->lpVtbl->CreateSoundBuffer(DirectSound, &BufferDescription, &SecondaryBuffer, 0);
+            if(SUCCEEDED(Error))
+            {
+                OutputDebugStringA("secondary buffer created successfully\n");
+            }
+            else
+            {
+                // todo: diagnostic
+            }
+        }
+        else
+        {
+            // todo: diagnostic
+        }
     }
 }
 
@@ -282,7 +375,7 @@ Win32MainWindowCallback(
                 {
                 }
             }
-            
+
             bool AltKeyWasDown = ((LParam & (1 << 29)) != 0);
             if((VKCode == VK_F4) && AltKeyWasDown)
             {
@@ -378,6 +471,8 @@ WinMain(
 
             int XOffset = 0;
             int YOffset = 0;
+
+            Win32InitDSound(Window, 48000, 48000*sizeof(int16)*2);
 
             GlobalRunning = true;
             while(GlobalRunning) {
