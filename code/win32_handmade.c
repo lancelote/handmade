@@ -39,6 +39,7 @@ typedef struct win32_window_dimension
 // todo: global for now
 global_variable bool GlobalRunning;
 global_variable win32_offscreen_buffer GlobalBackBuffer;
+global_variable LPDIRECTSOUNDBUFFER GlobalSecondaryBuffer;
 
 // controller support is optional, so we need a trick in case we didn't compile
 // with required libraries for it
@@ -71,11 +72,11 @@ typedef DIRECT_SOUND_CREATE(direct_sound_create);
 internal void
 Win32LoadXInput(void)
 {
-    // todo: Windows 7 only has 1.3
+    // TODO: Windows 7 only has 1.3
     HMODULE XInputLibrary = LoadLibraryA("XInput1_4.dll");
     if(!XInputLibrary)
     {
-        // todo: diagnostic
+        // TODO: diagnostic
         XInputLibrary = LoadLibraryA("XInput1_3.dll");
     }
 
@@ -87,11 +88,11 @@ Win32LoadXInput(void)
         XInputSetState = (x_input_set_state *)GetProcAddress(XInputLibrary, "XInputSetState");
         if(!XInputSetState) {XInputSetState = XInputSetStateStub;}
 
-        // todo: diagnostic
+        // TODO: diagnostic
     }
     else
     {
-        // todo: diagnostic
+        // TODO: diagnostic
     }
 }
 
@@ -106,7 +107,7 @@ Win32InitDSound(HWND Window, int32 SamplesPerSecond, int32 BufferSize)
         // get a DirectSound object
         direct_sound_create *DirectSoundCreate = (direct_sound_create *)GetProcAddress(DSoundLibrary, "DirectSoundCreate");
 
-        // todo: double-check if it works on XP - DirectSound8 or 7?
+        // TODO: double-check if it works on XP - DirectSound8 or 7?
         LPDIRECTSOUND DirectSound;
         if(DirectSoundCreate && SUCCEEDED(DirectSoundCreate(0, &DirectSound, 0)))
         {
@@ -123,7 +124,7 @@ Win32InitDSound(HWND Window, int32 SamplesPerSecond, int32 BufferSize)
             {
                 DSBUFFERDESC BufferDescription = {};
                 BufferDescription.dwSize = sizeof(BufferDescription);
-                // todo: DSBCAPS_GLOBALFOCUS?
+                // TODO: DSBCAPS_GLOBALFOCUS?
                 BufferDescription.dwFlags = DSBCAPS_PRIMARYBUFFER;
 
                 // "create" a primary buffer
@@ -137,41 +138,44 @@ Win32InitDSound(HWND Window, int32 SamplesPerSecond, int32 BufferSize)
                     }
                     else
                     {
-                        // todo: diagnostic
+                        // TODO: diagnostic
                     }
                 }
                 else
                 {
-                    // todo: diagnostic
+                    // TODO: diagnostic
                 }
             }
             else
             {
-                // todo: diagnostic
+                // TODO: diagnostic
             }
 
             // "create" a secondary buffer
             DSBUFFERDESC BufferDescription = {};
             BufferDescription.dwSize = sizeof(BufferDescription);
-            // todo: DSBCAPS_GETCURRENTPOSITION2
+            // TODO: DSBCAPS_GETCURRENTPOSITION2
             BufferDescription.dwFlags = 0;
             BufferDescription.dwBufferBytes = BufferSize;
             BufferDescription.lpwfxFormat = &WaveFormat;
 
-            LPDIRECTSOUNDBUFFER SecondaryBuffer;
-            HRESULT Error = DirectSound->lpVtbl->CreateSoundBuffer(DirectSound, &BufferDescription, &SecondaryBuffer, 0);
+            HRESULT Error = DirectSound->lpVtbl->CreateSoundBuffer(
+                DirectSound,
+                &BufferDescription,
+                &GlobalSecondaryBuffer,
+                0);
             if(SUCCEEDED(Error))
             {
                 OutputDebugStringA("secondary buffer created successfully\n");
             }
             else
             {
-                // todo: diagnostic
+                // TODO: diagnostic
             }
         }
         else
         {
-            // todo: diagnostic
+            // TODO: diagnostic
         }
     }
 }
@@ -211,7 +215,7 @@ RenderWeirdGradient(
             ...
     */
 
-    // todo: see what the optimizer does, and whether Buffer should be a pointer
+    // TODO: see what the optimizer does, and whether Buffer should be a pointer
     uint8 *Row = (uint8 *)Buffer->Memory;  // should be uint8 to add pitch (in bytes)
     for (int Y = 0; Y < Buffer->Height; ++Y)
     {
@@ -241,8 +245,8 @@ Win32ResizeDIBSection(
     int Width,
     int Height)
 {
-    // todo: play with stretch modes
-    // todo: maybe don't free first, free after, then free first if that fails
+    // TODO: play with stretch modes
+    // TODO: maybe don't free first, free after, then free first if that fails
     if (Buffer->Memory)
     {
         VirtualFree(
@@ -273,7 +277,7 @@ Win32ResizeDIBSection(
     // how many bytes the pointer should go for the next row
     Buffer->Pitch = Width * BytesPerPixel;
 
-    // todo: probably clear this to black
+    // TODO: probably clear this to black
 }
 
 internal void
@@ -283,7 +287,7 @@ Win32DisplayBufferInWindow(
     int WindowWidth,
     int WindowHeight)
 {
-    // todo: correct the aspect ration
+    // TODO: correct the aspect ration
     StretchDIBits(
         DeviceContext,
         0, 0, WindowWidth, WindowHeight,   // destination
@@ -310,7 +314,7 @@ Win32MainWindowCallback(
 
         case WM_DESTROY:
         {
-            // todo: handle this as an error - recreate window?
+            // TODO: handle this as an error - recreate window?
             GlobalRunning = false;
         } break;
 
@@ -385,7 +389,7 @@ Win32MainWindowCallback(
 
         case WM_CLOSE:
         {
-            // todo: handle this with a message to the user?
+            // TODO: handle this with a message to the user?
             GlobalRunning = false;
         } break;
 
@@ -469,10 +473,18 @@ WinMain(
             // and use it forever as it is not shared
             HDC DeviceContext = GetDC(Window);
 
+            int SamplesPerSecond = 48000;
             int XOffset = 0;
             int YOffset = 0;
+            int Hz = 256;
+            uint32 RunningSampleIndex = 0;
+            int SquareWaveCounter = 0;
+            int SquareWavePeriod = SamplesPerSecond/Hz;
+            int HalfSquareWavePeriod = SquareWavePeriod/2;
+            int BytesPerSample = sizeof(int16)*2;
+            int SecondaryBufferSize = SamplesPerSecond*BytesPerSample;
 
-            Win32InitDSound(Window, 48000, 48000*sizeof(int16)*2);
+            Win32InitDSound(Window, SamplesPerSecond, SecondaryBufferSize);
 
             GlobalRunning = true;
             while(GlobalRunning) {
@@ -494,14 +506,14 @@ WinMain(
                     DispatchMessageA(&Message);
                 }
 
-                // todo: should we poll this more frequently?
+                // TODO: should we poll this more frequently?
                 for(DWORD ControllerIndex = 0; ControllerIndex < XUSER_MAX_COUNT; ++ControllerIndex)
                 {
                     XINPUT_STATE ControllerState;
                     if(XInputGetState(ControllerIndex, &ControllerState) == ERROR_SUCCESS)
                     {
                         // this controller is plugged in
-                        // todo: see if `ControllerState.dwPacketNumber` increments too rapidly
+                        // TODO: see if `ControllerState.dwPacketNumber` increments too rapidly
                         XINPUT_GAMEPAD *Pad = &ControllerState.Gamepad;
 
                         bool Up = (Pad->wButtons & XINPUT_GAMEPAD_DPAD_UP);
@@ -531,6 +543,72 @@ WinMain(
 
                 RenderWeirdGradient(&GlobalBackBuffer, XOffset, YOffset);
 
+                // DirectSound output test
+
+                // the buffer is ...
+                // [int16 int16] int16 int16 ...
+                // [LEFT  RIGHT] LEFT  RIGHT ...
+                //  ^^^^^^^^^^^ is a single sample
+
+                DWORD PlayCursor;
+                DWORD WriteCursor;
+                if(SUCCEEDED(GlobalSecondaryBuffer->lpVtbl->GetCurrentPosition(
+                    GlobalSecondaryBuffer,
+                    &PlayCursor,
+                    &WriteCursor)))
+                {
+                    DWORD ByteToLock = RunningSampleIndex*BytesPerSample % SecondaryBufferSize;
+                    DWORD BytesToWrite;
+
+                    if(ByteToLock > PlayCursor)
+                    {
+                        BytesToWrite = (SecondaryBufferSize - ByteToLock);
+                        BytesToWrite += PlayCursor;
+                    }
+                    else
+                    {
+                        BytesToWrite = PlayCursor - ByteToLock;
+                    }
+
+                    VOID *Region1;
+                    DWORD Region1Size;
+                    VOID *Region2;
+                    DWORD Region2Size;
+
+                    if(SUCCEEDED(GlobalSecondaryBuffer->lpVtbl->Lock(
+                        GlobalSecondaryBuffer,
+                        ByteToLock,
+                        BytesToWrite,
+                        &Region1,
+                        &Region1Size,
+                        &Region2,
+                        &Region2Size,
+                        0 // flags
+                    )))
+                    {
+                        // TODO: assert that Region1Size & Region2Size are valid
+                        int16 *SampleOut = (int16 *)Region1;
+
+                        DWORD Region1SampleCount = Region1Size/BytesPerSample;
+                        DWORD Region2SampleCount = Region2Size/BytesPerSample;
+
+                        for(DWORD SampleIndex = 0; SampleIndex < Region1SampleCount; ++SampleIndex)
+                        {
+                            int16 SampleValue = ((RunningSampleIndex / HalfSquareWavePeriod) % 2) ? 16000 : -16000;
+                            *SampleOut++ = SampleValue;
+                            *SampleOut++ = SampleValue;
+                        }
+
+                        SampleOut = (int16 *)Region2;
+                        for(DWORD SampleIndex = 0; SampleIndex < Region2SampleCount; ++SampleIndex)
+                        {
+                            int16 SampleValue = ((SquareWaveCounter / HalfSquareWavePeriod) % 2) ? 16000 : -16000;
+                            *SampleOut++ = SampleValue;
+                            *SampleOut++ = SampleValue;
+                        }
+                    }
+                }
+
                 win32_window_dimension Dimension = Win32GetWindowDimension(Window);
 
                 Win32DisplayBufferInWindow(
@@ -540,10 +618,10 @@ WinMain(
                     Dimension.Height);
             }
         } else {
-            // todo: logging
+            // TODO: logging
         }
     } else {
-        // todo: logging
+        // TODO: logging
     }
 
     return(0);
