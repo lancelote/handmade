@@ -473,13 +473,16 @@ WinMain(
             // and use it forever as it is not shared
             HDC DeviceContext = GetDC(Window);
 
-            int SamplesPerSecond = 48000;
+            // graphics test
             int XOffset = 0;
             int YOffset = 0;
-            int Hz = 256;
+
+            // sound test
+            int SamplesPerSecond = 48000;
+            int ToneHz = 256;
             uint32 RunningSampleIndex = 0;
             int SquareWaveCounter = 0;
-            int SquareWavePeriod = SamplesPerSecond/Hz;
+            int SquareWavePeriod = SamplesPerSecond/ToneHz;
             int HalfSquareWavePeriod = SquareWavePeriod/2;
             int BytesPerSample = sizeof(int16)*2;
             int SecondaryBufferSize = SamplesPerSecond*BytesPerSample;
@@ -587,22 +590,22 @@ WinMain(
                     )))
                     {
                         // TODO: assert that Region1Size & Region2Size are valid
-                        int16 *SampleOut = (int16 *)Region1;
-
                         DWORD Region1SampleCount = Region1Size/BytesPerSample;
-                        DWORD Region2SampleCount = Region2Size/BytesPerSample;
+                        int16 *SampleOut = (int16 *)Region1;
 
                         for(DWORD SampleIndex = 0; SampleIndex < Region1SampleCount; ++SampleIndex)
                         {
-                            int16 SampleValue = ((RunningSampleIndex / HalfSquareWavePeriod) % 2) ? 16000 : -16000;
+                            int16 SampleValue = ((RunningSampleIndex++ / HalfSquareWavePeriod) % 2) ? 16000 : -16000;
                             *SampleOut++ = SampleValue;
                             *SampleOut++ = SampleValue;
                         }
 
+                        DWORD Region2SampleCount = Region2Size/BytesPerSample;
                         SampleOut = (int16 *)Region2;
+
                         for(DWORD SampleIndex = 0; SampleIndex < Region2SampleCount; ++SampleIndex)
                         {
-                            int16 SampleValue = ((SquareWaveCounter / HalfSquareWavePeriod) % 2) ? 16000 : -16000;
+                            int16 SampleValue = ((RunningSampleIndex++ / HalfSquareWavePeriod) % 2) ? 16000 : -16000;
                             *SampleOut++ = SampleValue;
                             *SampleOut++ = SampleValue;
                         }
