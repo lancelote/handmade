@@ -4,7 +4,8 @@
 
 - [ ] Handmade Hero
   - [ ] ...
-  - [ ] Day 008: Writing a Square Wave to DirectSound
+  - [ ] Day 009: Variable-Pitch Sine Wave Output
+  - [x] Day 008: Writing a Square Wave to DirectSound
   - [x] Day 007: Initializing DirectSound
   - [x] Day 006: Gamepad and Keyboard Input
   - [x] Day 005: Windows Graphics Review

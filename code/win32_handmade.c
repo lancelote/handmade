@@ -489,11 +489,7 @@ WinMain(
             int SecondaryBufferSize = SamplesPerSecond*BytesPerSample;
 
             Win32InitDSound(Window, SamplesPerSecond, SecondaryBufferSize);
-            GlobalSecondaryBuffer->lpVtbl->Play(
-                GlobalSecondaryBuffer,
-                0, // reserved, must be 0
-                0, // priority
-                DSBPLAY_LOOPING);
+            bool SoundIsPlaying = false;
 
             GlobalRunning = true;
             while(GlobalRunning) {
@@ -569,7 +565,11 @@ WinMain(
                     DWORD ByteToLock = RunningSampleIndex*BytesPerSample % SecondaryBufferSize;
                     DWORD BytesToWrite;
 
-                    if(ByteToLock > PlayCursor)
+                    if(ByteToLock == PlayCursor)
+                    {
+                        BytesToWrite = SecondaryBufferSize;
+                    }
+                    else if(ByteToLock > PlayCursor)
                     {
                         BytesToWrite = (SecondaryBufferSize - ByteToLock);
                         BytesToWrite += PlayCursor;
@@ -580,6 +580,7 @@ WinMain(
                     }
 
                     // TODO: need to test sound output more
+                    // TODO: switch to a sine wave
                     VOID *Region1;
                     DWORD Region1Size;
                     VOID *Region2;
@@ -625,6 +626,16 @@ WinMain(
                             Region2,
                             Region2Size);
                     }
+                }
+
+                if(!SoundIsPlaying)
+                {
+                    GlobalSecondaryBuffer->lpVtbl->Play(
+                        GlobalSecondaryBuffer,
+                        0, // reserved, must be 0
+                        0, // priority
+                        DSBPLAY_LOOPING);
+                    SoundIsPlaying = true;
                 }
 
                 win32_window_dimension Dimension = Win32GetWindowDimension(Window);
