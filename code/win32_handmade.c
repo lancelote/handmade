@@ -480,6 +480,7 @@ WinMain(
             // sound test
             int SamplesPerSecond = 48000;
             int ToneHz = 256;
+            int16 ToneVolume = 3000;
             uint32 RunningSampleIndex = 0;
             int SquareWaveCounter = 0;
             int SquareWavePeriod = SamplesPerSecond/ToneHz;
@@ -488,6 +489,11 @@ WinMain(
             int SecondaryBufferSize = SamplesPerSecond*BytesPerSample;
 
             Win32InitDSound(Window, SamplesPerSecond, SecondaryBufferSize);
+            GlobalSecondaryBuffer->lpVtbl->Play(
+                GlobalSecondaryBuffer,
+                0, // reserved, must be 0
+                0, // priority
+                DSBPLAY_LOOPING);
 
             GlobalRunning = true;
             while(GlobalRunning) {
@@ -573,6 +579,7 @@ WinMain(
                         BytesToWrite = PlayCursor - ByteToLock;
                     }
 
+                    // TODO: need to test sound output more
                     VOID *Region1;
                     DWORD Region1Size;
                     VOID *Region2;
@@ -590,12 +597,13 @@ WinMain(
                     )))
                     {
                         // TODO: assert that Region1Size & Region2Size are valid
+                        // TODO: collapse these two loops
                         DWORD Region1SampleCount = Region1Size/BytesPerSample;
                         int16 *SampleOut = (int16 *)Region1;
 
                         for(DWORD SampleIndex = 0; SampleIndex < Region1SampleCount; ++SampleIndex)
                         {
-                            int16 SampleValue = ((RunningSampleIndex++ / HalfSquareWavePeriod) % 2) ? 16000 : -16000;
+                            int16 SampleValue = ((RunningSampleIndex++ / HalfSquareWavePeriod) % 2) ? ToneVolume : -ToneVolume;
                             *SampleOut++ = SampleValue;
                             *SampleOut++ = SampleValue;
                         }
@@ -605,10 +613,17 @@ WinMain(
 
                         for(DWORD SampleIndex = 0; SampleIndex < Region2SampleCount; ++SampleIndex)
                         {
-                            int16 SampleValue = ((RunningSampleIndex++ / HalfSquareWavePeriod) % 2) ? 16000 : -16000;
+                            int16 SampleValue = ((RunningSampleIndex++ / HalfSquareWavePeriod) % 2) ? ToneVolume : -ToneVolume;
                             *SampleOut++ = SampleValue;
                             *SampleOut++ = SampleValue;
                         }
+
+                        GlobalSecondaryBuffer->lpVtbl->Unlock(
+                            GlobalSecondaryBuffer,
+                            Region1,
+                            Region1Size,
+                            Region2,
+                            Region2Size);
                     }
                 }
 
