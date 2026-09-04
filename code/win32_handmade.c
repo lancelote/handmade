@@ -647,7 +647,8 @@ WinMain(
                     DWORD ByteToLock = (SoundOutput.RunningSampleIndex*SoundOutput.BytesPerSample) % SoundOutput.SecondaryBufferSize;
                     DWORD BytesToWrite;
 
-                    // TODO: more accurate check
+                    // TODO: change this to use lower latency offset from the PlayCursor,
+                    //       when we start to have sound effects
                     if(ByteToLock == PlayCursor)
                     {
                         BytesToWrite = 0;
