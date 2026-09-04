@@ -566,8 +566,13 @@ WinMain(
             SoundOutput.SecondaryBufferSize = SoundOutput.SamplesPerSecond*SoundOutput.BytesPerSample;
 
             Win32InitDSound(Window, SoundOutput.SamplesPerSecond, SoundOutput.SecondaryBufferSize);
-            bool SoundIsPlaying = false;
-
+            Win32FillSoundBuffer(&SoundOutput, 0, SoundOutput.SecondaryBufferSize);
+            GlobalSecondaryBuffer->lpVtbl->Play(
+                GlobalSecondaryBuffer,
+                0, // reserved, must be 0
+                0, // priority
+                DSBPLAY_LOOPING);
+            
             GlobalRunning = true;
             while(GlobalRunning) {
                 MSG Message;
@@ -645,10 +650,7 @@ WinMain(
                     // TODO: more accurate check
                     if(ByteToLock == PlayCursor)
                     {
-                        if(!SoundIsPlaying)
-                        {
-                            BytesToWrite = SoundOutput.SecondaryBufferSize;
-                        }
+                        BytesToWrite = 0;
                     }
                     else if(ByteToLock > PlayCursor)
                     {
@@ -663,18 +665,7 @@ WinMain(
                     Win32FillSoundBuffer(&SoundOutput, ByteToLock, BytesToWrite);
                 }
 
-                if(!SoundIsPlaying)
-                {
-                    GlobalSecondaryBuffer->lpVtbl->Play(
-                        GlobalSecondaryBuffer,
-                        0, // reserved, must be 0
-                        0, // priority
-                        DSBPLAY_LOOPING);
-                    SoundIsPlaying = true;
-                }
-
                 win32_window_dimension Dimension = Win32GetWindowDimension(Window);
-
                 Win32DisplayBufferInWindow(
                     &GlobalBackBuffer,
                     DeviceContext,
