@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include <xinput.h>
 #include <dsound.h>
+
+// TODO: implement sine myself
 #include <math.h>
 
 #define bool int
