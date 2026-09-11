@@ -651,11 +651,7 @@ WinMain(
 
                     // TODO: change this to use lower latency offset from the PlayCursor,
                     //       when we start to have sound effects
-                    if(ByteToLock == PlayCursor)
-                    {
-                        BytesToWrite = 0;
-                    }
-                    else if(ByteToLock > PlayCursor)
+                    if(ByteToLock > PlayCursor)
                     {
                         BytesToWrite = (SoundOutput.SecondaryBufferSize - ByteToLock);
                         BytesToWrite += PlayCursor;
