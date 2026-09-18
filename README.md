@@ -4,7 +4,8 @@
 
 - [ ] Handmade Hero
   - [ ] ...
-  - [ ] Day 009: Variable-Pitch Sine Wave Output
+  - [ ] Day 010: QueryPerformanceCounter and RDTSC
+  - [x] Day 009: Variable-Pitch Sine Wave Output
   - [x] Day 008: Writing a Square Wave to DirectSound
   - [x] Day 007: Initializing DirectSound
   - [x] Day 006: Gamepad and Keyboard Input
