@@ -44,6 +44,18 @@ typedef struct win32_window_dimension
     int Height;
 } win32_window_dimension;
 
+typedef struct win32_sound_output
+{
+    int SamplesPerSecond;
+    int ToneHz;
+    int16 ToneVolume;
+    uint32 RunningSampleIndex;
+    int WavePeriod;
+    int BytesPerSample;
+    int SecondaryBufferSize;
+    real32 tSine;
+} win32_sound_output;
+
 // todo: global for now
 global_variable bool GlobalRunning;
 global_variable win32_offscreen_buffer GlobalBackBuffer;
@@ -435,17 +447,6 @@ Win32MainWindowCallback(
     return(Result);
 }
 
-typedef struct win32_sound_output
-{
-    int SamplesPerSecond;
-    int ToneHz;
-    int16 ToneVolume;
-    uint32 RunningSampleIndex;
-    int WavePeriod;
-    int BytesPerSample;
-    int SecondaryBufferSize;
-} win32_sound_output;
-
 internal void
 Win32FillSoundBuffer(win32_sound_output *SoundOutput, DWORD ByteToLock, DWORD BytesToWrite)
 {
@@ -475,12 +476,12 @@ Win32FillSoundBuffer(win32_sound_output *SoundOutput, DWORD ByteToLock, DWORD By
 
         for(DWORD SampleIndex = 0; SampleIndex < Region1SampleCount; ++SampleIndex)
         {
-            real32 t = 2.0f*Pi32*(real32)SoundOutput->RunningSampleIndex/(real32)SoundOutput->WavePeriod;
-            real32 SineValue = sin(t);
+            real32 SineValue = sinf(SoundOutput->tSine);
             int16 SampleValue = (int16)(SineValue*SoundOutput->ToneVolume);
             *SampleOut++ = SampleValue;
             *SampleOut++ = SampleValue;
 
+            SoundOutput->tSine += 2.0f*Pi32*1.0f/(real32)SoundOutput->WavePeriod;
             ++SoundOutput->RunningSampleIndex;
         }
 
@@ -489,12 +490,12 @@ Win32FillSoundBuffer(win32_sound_output *SoundOutput, DWORD ByteToLock, DWORD By
 
         for(DWORD SampleIndex = 0; SampleIndex < Region2SampleCount; ++SampleIndex)
         {
-            real32 t = 2.0f*Pi32*(real32)SoundOutput->RunningSampleIndex/(real32)SoundOutput->WavePeriod;
-            real32 SineValue = sin(t);
+            real32 SineValue = sinf(SoundOutput->tSine);
             int16 SampleValue = (int16)(SineValue*SoundOutput->ToneVolume);
             *SampleOut++ = SampleValue;
             *SampleOut++ = SampleValue;
 
+            SoundOutput->tSine += 2.0f*Pi32*1.0f/(real32)SoundOutput->WavePeriod;
             ++SoundOutput->RunningSampleIndex;
         }
 
@@ -574,7 +575,7 @@ WinMain(
                 0, // reserved, must be 0
                 0, // priority
                 DSBPLAY_LOOPING);
-            
+
             GlobalRunning = true;
             while(GlobalRunning) {
                 MSG Message;
@@ -623,6 +624,12 @@ WinMain(
 
                         XOffset += StickX >> 12;
                         YOffset += StickY >> 12;
+
+                        if(AButton)
+                        {
+                            SoundOutput.ToneHz = 512;
+                            SoundOutput.WavePeriod = SoundOutput.SamplesPerSecond/SoundOutput.ToneHz;
+                        }
                     }
                     else
                     {
