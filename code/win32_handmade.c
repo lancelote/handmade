@@ -96,6 +96,13 @@ Win32LoadXInput(void)
 {
     // TODO: Windows 7 only has 1.3
     HMODULE XInputLibrary = LoadLibraryA("XInput1_4.dll");
+
+    if(!XInputLibrary)
+    {
+        // TODO: diagnostic
+        XInputLibrary = LoadLibraryA("XInput9_1_0.dll");
+    }
+
     if(!XInputLibrary)
     {
         // TODO: diagnostic
