@@ -632,8 +632,9 @@ WinMain(
                         int16 StickX = Pad->sThumbLX;
                         int16 StickY = Pad->sThumbLY;
 
-                        XOffset += StickX >> 12;
-                        YOffset += StickY >> 12;
+                        // TODO: add proper deadzone handling (check xinput library for values)
+                        XOffset += StickX / 4096;
+                        YOffset += StickY / 4096;
 
                         if(AButton)
                         {
