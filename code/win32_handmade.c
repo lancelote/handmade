@@ -524,6 +524,10 @@ WinMain(
     LPSTR CommandLine,
     int ShowCode)
 {
+    LARGE_INTEGER PerfCountFrequencyResult;
+    QueryPerformanceFrequency(&PerfCountFrequencyResult);
+    int64 PerfCountFrequency = PerfCountFrequencyResult.QuadPart; // counts per second
+
     Win32LoadXInput();
 
     WNDCLASSA WindowClass = {};
@@ -587,6 +591,10 @@ WinMain(
                 DSBPLAY_LOOPING);
 
             GlobalRunning = true;
+
+            LARGE_INTEGER LastCounter;
+            QueryPerformanceCounter(&LastCounter);
+
             while(GlobalRunning) {
                 MSG Message;
                 while(PeekMessage(
@@ -689,6 +697,20 @@ WinMain(
                     DeviceContext,
                     Dimension.Width,
                     Dimension.Height);
+
+                LARGE_INTEGER EndCounter;
+                QueryPerformanceCounter(&EndCounter);
+
+                // TODO: display the value here
+                int64 CounterElapsed = EndCounter.QuadPart - LastCounter.QuadPart; // counts per frame
+                int32 MSPerFrame = (int32)(1000 * CounterElapsed / PerfCountFrequency);
+                int32 FPS = PerfCountFrequency / CounterElapsed;
+
+                char Buffer[256];
+                wsprintf(Buffer, "Ms/Frame: %dms / %dFPS\n", MSPerFrame, FPS);
+                OutputDebugStringA(Buffer);
+
+                LastCounter = EndCounter;
             }
         } else {
             // TODO: logging
