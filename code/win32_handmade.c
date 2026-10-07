@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <xinput.h>
 #include <dsound.h>
 
@@ -595,6 +596,8 @@ WinMain(
             LARGE_INTEGER LastCounter;
             QueryPerformanceCounter(&LastCounter);
 
+            int64 LastCycleCount = __rdtsc();
+
             while(GlobalRunning) {
                 MSG Message;
                 while(PeekMessage(
@@ -698,19 +701,24 @@ WinMain(
                     Dimension.Width,
                     Dimension.Height);
 
+                int64 EndCycleCount = __rdtsc();
+
                 LARGE_INTEGER EndCounter;
                 QueryPerformanceCounter(&EndCounter);
 
                 // TODO: display the value here
+                int64 CyclesElapsed = EndCycleCount - LastCycleCount;
                 int64 CounterElapsed = EndCounter.QuadPart - LastCounter.QuadPart; // counts per frame
-                int32 MSPerFrame = (int32)(1000 * CounterElapsed / PerfCountFrequency);
-                int32 FPS = PerfCountFrequency / CounterElapsed;
+                real32 MSPerFrame = 1000.0f * (real32)CounterElapsed / (real32)PerfCountFrequency;
+                real32 FPS = (real32)PerfCountFrequency / (real32)CounterElapsed;
+                real32 MCyclesPerFrame = (real32)CyclesElapsed / (1000.0f * 1000.0f);
 
                 char Buffer[256];
-                wsprintf(Buffer, "Ms/Frame: %dms / %dFPS\n", MSPerFrame, FPS);
+                sprintf(Buffer, "%.02fms/f, %.02ff/s, %.02fMc/f\n", MSPerFrame, FPS, MCyclesPerFrame);
                 OutputDebugStringA(Buffer);
 
                 LastCounter = EndCounter;
+                LastCycleCount = EndCycleCount;
             }
         } else {
             // TODO: logging
