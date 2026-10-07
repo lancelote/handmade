@@ -709,9 +709,9 @@ WinMain(
                 // TODO: display the value here
                 uint64 CyclesElapsed = EndCycleCount - LastCycleCount;
                 int64 CounterElapsed = EndCounter.QuadPart - LastCounter.QuadPart; // counts per frame
-                real32 MSPerFrame = 1000.0f * (real32)CounterElapsed / (real32)PerfCountFrequency;
-                real32 FPS = (real32)PerfCountFrequency / (real32)CounterElapsed;
-                real32 MCyclesPerFrame = (real32)CyclesElapsed / (1000.0f * 1000.0f);
+                real64 MSPerFrame = 1000.0f * (real64)CounterElapsed / (real64)PerfCountFrequency;
+                real64 FPS = (real64)PerfCountFrequency / (real64)CounterElapsed;
+                real64 MCyclesPerFrame = (real64)CyclesElapsed / (1000.0f * 1000.0f);
 
                 char Buffer[256];
                 sprintf(Buffer, "%.02fms/f, %.02ff/s, %.02fMc/f\n", MSPerFrame, FPS, MCyclesPerFrame);
