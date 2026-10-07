@@ -4,7 +4,8 @@
 
 - [ ] Handmade Hero
   - [ ] ...
-  - [ ] Day 010: QueryPerformanceCounter and RDTSC
+  - [ ] Day 011: The Basics of Platform API Design
+  - [x] Day 010: QueryPerformanceCounter and RDTSC
   - [x] Day 009: Variable-Pitch Sine Wave Output
   - [x] Day 008: Writing a Square Wave to DirectSound
   - [x] Day 007: Initializing DirectSound
