@@ -1,3 +1,22 @@
+/*
+  TODO: this is not a final platform layer
+
+  - saved game locations
+  - getting a handle to our own executable file
+  - asset loading path
+  - threading (launch a thread)
+  - raw input (support for multiple keyboards
+  - sleep/timeBeginPeriod
+  - ClipCursor() (for multimonitor support)
+  - fullscreen support
+  - WM_SETCURSOR (control cursor visibility)
+  - QueryCancelAutoplay
+  - WM_ACTIVATEAPP (for when we are not the active application)
+  - blit speed improvements (BitBlt)
+  - hardware acceleration (OpenGL or Direct3D or both)
+  - GetKeyboardLayout (for French keyboards, internaltional WASD support)
+*/
+
 #include <windows.h>
 #include <stdint.h>
 #include <stdio.h>
