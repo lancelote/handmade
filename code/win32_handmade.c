@@ -17,14 +17,7 @@
   - GetKeyboardLayout (for French keyboards, internaltional WASD support)
 */
 
-#include <windows.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <xinput.h>
-#include <dsound.h>
-
-// TODO: implement sine myself
-#include <math.h>
 
 #define true 1
 #define false 0
@@ -50,6 +43,14 @@ typedef float real32;
 typedef double real64;
 
 #include "handmade.c"
+
+#include <windows.h>
+#include <stdio.h>
+#include <xinput.h>
+#include <dsound.h>
+
+// TODO: implement sine myself
+#include <math.h>
 
 typedef struct win32_offscreen_buffer
 {
