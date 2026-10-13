@@ -49,6 +49,8 @@ typedef uint64_t uint64;
 typedef float real32;
 typedef double real64;
 
+#include "handmade.c"
+
 typedef struct win32_offscreen_buffer
 {
     // pixels are always 32-bits wide, memory order BB GG RR XX
@@ -243,52 +245,6 @@ Win32GetWindowDimension(HWND Window)
 }
 
 internal void
-RenderWeirdGradient(
-    win32_offscreen_buffer *Buffer,
-    int BlueOffset,
-    int GreenOffset)
-{
-    /*
-    MEMORY ORDER:   RR GG BB xx
-    LOADED IN:      xx BB GG RR
-    WANTED:         xx RR GG BB
-    MEMORY ORDER:   BB GG RR xx
-    */
-
-    /*
-            WIDTH ->
-            Width & BytesPerPixel -> pointer to the next row
-    BitmapMemory -> 0 BB GG RR xx BB GG RR xx BB GG RR xx ...
-    BM + Pitch      1 BB GG RR xx ...
-            2 BB GG RR xx ...
-            ...
-    */
-
-    // TODO: see what the optimizer does, and whether Buffer should be a pointer
-    uint8 *Row = (uint8 *)Buffer->Memory;  // should be uint8 to add pitch (in bytes)
-    for (int Y = 0; Y < Buffer->Height; ++Y)
-    {
-        uint32 *Pixel = (uint32 *)Row;
-        for (int X = 0; X < Buffer->Width; ++X)
-        {
-            /*
-            Pixel (32-bits)
-
-                   0  1  2  3  - byte order number (Pixel + 1, etc.)
-            memory:   BB GG RR xx
-            register: xx RR GG BB
-            */
-            uint8 Blue = (X + BlueOffset);
-            uint8 Green = (Y + GreenOffset);
-            *Pixel++ = (Green << 8) | Blue; // will be incremented by 4 bytes
-        }
-
-        Row += Buffer->Pitch;
-    }
-
-}
-
-internal void
 Win32ResizeDIBSection(
     win32_offscreen_buffer *Buffer,
     int Width,
@@ -480,7 +436,6 @@ internal void
 Win32FillSoundBuffer(win32_sound_output *SoundOutput, DWORD ByteToLock, DWORD BytesToWrite)
 {
     // TODO: need to test sound output more
-    // TODO: switch to a sine wave
     VOID *Region1;
     DWORD Region1Size;
     VOID *Region2;
@@ -678,7 +633,12 @@ WinMain(
                     }
                 }
 
-                RenderWeirdGradient(&GlobalBackBuffer, XOffset, YOffset);
+                game_offscreen_buffer Buffer = {};
+                Buffer.Memory = GlobalBackBuffer.Memory;
+                Buffer.Width = GlobalBackBuffer.Width;
+                Buffer.Height = GlobalBackBuffer.Height;
+                Buffer.Pitch = GlobalBackBuffer.Pitch;
+                GameUpdateAndRender(&Buffer, XOffset, YOffset);
 
                 // DirectSound output test
 
@@ -698,8 +658,6 @@ WinMain(
                     DWORD TargetCursor = (PlayCursor + SoundOutput.LatencySampleCount*SoundOutput.BytesPerSample) % SoundOutput.SecondaryBufferSize;
                     DWORD BytesToWrite;
 
-                    // TODO: change this to use lower latency offset from the PlayCursor,
-                    //       when we start to have sound effects
                     if(ByteToLock > TargetCursor)
                     {
                         BytesToWrite = (SoundOutput.SecondaryBufferSize - ByteToLock);
@@ -725,16 +683,17 @@ WinMain(
                 LARGE_INTEGER EndCounter;
                 QueryPerformanceCounter(&EndCounter);
 
-                // TODO: display the value here
                 uint64 CyclesElapsed = EndCycleCount - LastCycleCount;
                 int64 CounterElapsed = EndCounter.QuadPart - LastCounter.QuadPart; // counts per frame
                 real64 MSPerFrame = 1000.0f * (real64)CounterElapsed / (real64)PerfCountFrequency;
                 real64 FPS = (real64)PerfCountFrequency / (real64)CounterElapsed;
                 real64 MCyclesPerFrame = (real64)CyclesElapsed / (1000.0f * 1000.0f);
 
+#if 0
                 char Buffer[256];
                 sprintf(Buffer, "%.02fms/f, %.02ff/s, %.02fMc/f\n", MSPerFrame, FPS, MCyclesPerFrame);
                 OutputDebugStringA(Buffer);
+#endif
 
                 LastCounter = EndCounter;
                 LastCycleCount = EndCycleCount;
