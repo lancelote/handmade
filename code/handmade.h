@@ -17,6 +17,7 @@
   - bitmap buffer to use
   - sound buffer to use
 */
+// todo: in the future, rendering _specifically_ will become a three-tiered abstraction
 typedef struct game_offscreen_buffer
 {
     // pixels are always 32-bits wide, memory order BB GG RR XX
