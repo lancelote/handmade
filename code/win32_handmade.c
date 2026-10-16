@@ -17,6 +17,8 @@
   - GetKeyboardLayout (for French keyboards, internaltional WASD support)
 */
 
+// TODO: implement sine myself
+#include <math.h>
 #include <stdint.h>
 
 #define true 1
@@ -48,9 +50,6 @@ typedef double real64;
 #include <stdio.h>
 #include <xinput.h>
 #include <dsound.h>
-
-// TODO: implement sine myself
-#include <math.h>
 
 typedef struct win32_offscreen_buffer
 {
@@ -634,12 +633,18 @@ WinMain(
                     }
                 }
 
+                int16 Samples[48000/30];
+                game_sound_output_buffer SoundBuffer = {};
+                SoundBuffer.SamplesPerSecond = SoundOutput.SamplesPerSecond;
+                SoundBuffer.SampleCount = SoundBuffer.SamplesPerSecond / 30;
+                SoundBuffer.Samples = Samples;
+
                 game_offscreen_buffer Buffer = {};
                 Buffer.Memory = GlobalBackBuffer.Memory;
                 Buffer.Width = GlobalBackBuffer.Width;
                 Buffer.Height = GlobalBackBuffer.Height;
                 Buffer.Pitch = GlobalBackBuffer.Pitch;
-                GameUpdateAndRender(&Buffer, XOffset, YOffset);
+                GameUpdateAndRender(&Buffer, XOffset, YOffset, &SoundBuffer);
 
                 // DirectSound output test
 
