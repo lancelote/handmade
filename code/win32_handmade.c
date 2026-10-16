@@ -633,7 +633,7 @@ WinMain(
                     }
                 }
 
-                int16 Samples[48000/30];
+                int16 Samples[(48000/30) * 2];
                 game_sound_output_buffer SoundBuffer = {};
                 SoundBuffer.SamplesPerSecond = SoundOutput.SamplesPerSecond;
                 SoundBuffer.SampleCount = SoundBuffer.SamplesPerSecond / 30;
