@@ -470,7 +470,6 @@ Win32ClearBuffer(win32_sound_output *SoundOutput)
             Region1Size,
             Region2,
             Region2Size);
-        }
     }
 }
 
@@ -597,7 +596,7 @@ WinMain(
             SoundOutput.LatencySampleCount = SoundOutput.SamplesPerSecond/15;
 
             Win32InitDSound(Window, SoundOutput.SamplesPerSecond, SoundOutput.SecondaryBufferSize);
-            Win32ClearBuffer(&SoundBuffer);
+            Win32ClearBuffer(&SoundOutput);
             GlobalSecondaryBuffer->lpVtbl->Play(
                 GlobalSecondaryBuffer,
                 0, // reserved, must be 0
