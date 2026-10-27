@@ -39,7 +39,8 @@ GameUpdateAndRender(
     game_offscreen_buffer *Buffer,
     int BlueOffset,
     int GreenOffset,
-    game_sound_output_buffer *SoundBuffer);
+    game_sound_output_buffer *SoundBuffer,
+    int ToneHz);
 
 #define HANDMADE_H
 #endif

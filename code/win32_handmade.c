@@ -48,6 +48,7 @@ typedef double real64;
 
 #include <windows.h>
 #include <stdio.h>
+#include <malloc.h>
 #include <xinput.h>
 #include <dsound.h>
 
@@ -459,7 +460,7 @@ Win32ClearBuffer(win32_sound_output *SoundOutput)
         }
 
         DestSample = (uint8 *)Region2;
-        for(DWORD ByteIndex = 0; ByteIndex < Region1Size; ++ByteIndex)
+        for(DWORD ByteIndex = 0; ByteIndex < Region2Size; ++ByteIndex)
         {
             *DestSample++ = 0;
         }
@@ -605,6 +606,9 @@ WinMain(
 
             GlobalRunning = true;
 
+            // TODO: pool with bitmap VirtualAlloc
+            int16 *Samples = (int16 *)VirtualAlloc(0, SoundOutput.SecondaryBufferSize, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
+
             LARGE_INTEGER LastCounter;
             QueryPerformanceCounter(&LastCounter);
 
@@ -671,36 +675,20 @@ WinMain(
                     }
                 }
 
-                int16 Samples[(48000/30) * 2];
-                game_sound_output_buffer SoundBuffer = {};
-                SoundBuffer.SamplesPerSecond = SoundOutput.SamplesPerSecond;
-                SoundBuffer.SampleCount = SoundBuffer.SamplesPerSecond / 30;
-                SoundBuffer.Samples = Samples;
-
-                game_offscreen_buffer Buffer = {};
-                Buffer.Memory = GlobalBackBuffer.Memory;
-                Buffer.Width = GlobalBackBuffer.Width;
-                Buffer.Height = GlobalBackBuffer.Height;
-                Buffer.Pitch = GlobalBackBuffer.Pitch;
-                GameUpdateAndRender(&Buffer, XOffset, YOffset, &SoundBuffer);
-
-                // DirectSound output test
-
-                // the buffer is ...
-                // [int16 int16] int16 int16 ...
-                // [LEFT  RIGHT] LEFT  RIGHT ...
-                //  ^^^^^^^^^^^ is a single sample
-
+                DWORD ByteToLock;
+                DWORD TargetCursor;
                 DWORD PlayCursor;
+                DWORD BytesToWrite;
                 DWORD WriteCursor;
+                bool32 SoundIsValid = false;
+
                 if(SUCCEEDED(GlobalSecondaryBuffer->lpVtbl->GetCurrentPosition(
                     GlobalSecondaryBuffer,
                     &PlayCursor,
                     &WriteCursor)))
                 {
-                    DWORD ByteToLock = (SoundOutput.RunningSampleIndex*SoundOutput.BytesPerSample) % SoundOutput.SecondaryBufferSize;
-                    DWORD TargetCursor = (PlayCursor + SoundOutput.LatencySampleCount*SoundOutput.BytesPerSample) % SoundOutput.SecondaryBufferSize;
-                    DWORD BytesToWrite;
+                    ByteToLock = (SoundOutput.RunningSampleIndex*SoundOutput.BytesPerSample) % SoundOutput.SecondaryBufferSize;
+                    TargetCursor = (PlayCursor + SoundOutput.LatencySampleCount*SoundOutput.BytesPerSample) % SoundOutput.SecondaryBufferSize;
 
                     if(ByteToLock > TargetCursor)
                     {
@@ -712,6 +700,29 @@ WinMain(
                         BytesToWrite = TargetCursor - ByteToLock;
                     }
 
+                    SoundIsValid = true;
+                }
+
+                game_sound_output_buffer SoundBuffer = {};
+                SoundBuffer.SamplesPerSecond = SoundOutput.SamplesPerSecond;
+                SoundBuffer.SampleCount = BytesToWrite / SoundOutput.BytesPerSample;
+                SoundBuffer.Samples = Samples;
+
+                game_offscreen_buffer Buffer = {};
+                Buffer.Memory = GlobalBackBuffer.Memory;
+                Buffer.Width = GlobalBackBuffer.Width;
+                Buffer.Height = GlobalBackBuffer.Height;
+                Buffer.Pitch = GlobalBackBuffer.Pitch;
+                GameUpdateAndRender(&Buffer, XOffset, YOffset, &SoundBuffer, SoundOutput.ToneHz);
+
+                // DirectSound output test
+
+                // the buffer is ...
+                // [int16 int16] int16 int16 ...
+                // [LEFT  RIGHT] LEFT  RIGHT ...
+                //  ^^^^^^^^^^^ is a single sample
+                if(SoundIsValid)
+                {
                     Win32FillSoundBuffer(&SoundOutput, ByteToLock, BytesToWrite, &SoundBuffer);
                 }
 
