@@ -682,6 +682,8 @@ WinMain(
                 DWORD WriteCursor;
                 bool32 SoundIsValid = false;
 
+                // TODO: tighten up sound logic so that we know where we should be writing to
+                //       and can anticipate the time spent in the game update
                 if(SUCCEEDED(GlobalSecondaryBuffer->lpVtbl->GetCurrentPosition(
                     GlobalSecondaryBuffer,
                     &PlayCursor,
