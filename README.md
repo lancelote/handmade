@@ -4,7 +4,8 @@
 
 - [ ] Handmade Hero
   - [ ] ...
-  - [ ] Day 012: Platform-independent Sound Output
+  - [ ] Day 013: Platform-independent User Input
+  - [x] Day 012: Platform-independent Sound Output
   - [x] Day 011: The Basics of Platform API Design
   - [x] Day 010: QueryPerformanceCounter and RDTSC
   - [x] Day 009: Variable-Pitch Sine Wave Output
