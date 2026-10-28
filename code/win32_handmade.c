@@ -675,11 +675,11 @@ WinMain(
                     }
                 }
 
-                DWORD ByteToLock;
-                DWORD TargetCursor;
-                DWORD PlayCursor;
-                DWORD BytesToWrite;
-                DWORD WriteCursor;
+                DWORD ByteToLock = 0;
+                DWORD TargetCursor = 0;
+                DWORD PlayCursor = 0;
+                DWORD BytesToWrite = 0;
+                DWORD WriteCursor = 0;
                 bool32 SoundIsValid = false;
 
                 // TODO: tighten up sound logic so that we know where we should be writing to
