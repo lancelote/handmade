@@ -35,12 +35,7 @@ typedef struct game_sound_output_buffer
 } game_sound_output_buffer;
 
 internal void
-GameUpdateAndRender(
-    game_offscreen_buffer *Buffer,
-    int BlueOffset,
-    int GreenOffset,
-    game_sound_output_buffer *SoundBuffer,
-    int ToneHz);
+GameUpdateAndRender(game_offscreen_buffer *Buffer, game_sound_output_buffer *SoundBuffer);
 
 #define HANDMADE_H
 #endif

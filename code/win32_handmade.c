@@ -52,34 +52,7 @@ typedef double real64;
 #include <xinput.h>
 #include <dsound.h>
 
-typedef struct win32_offscreen_buffer
-{
-    // pixels are always 32-bits wide, memory order BB GG RR XX
-    BITMAPINFO Info;
-    void *Memory;
-    int Width;
-    int Height;
-    int Pitch;
-} win32_offscreen_buffer;
-
-typedef struct win32_window_dimension
-{
-    int Width;
-    int Height;
-} win32_window_dimension;
-
-typedef struct win32_sound_output
-{
-    int SamplesPerSecond;
-    int ToneHz;
-    int16 ToneVolume;
-    uint32 RunningSampleIndex;
-    int WavePeriod;
-    int BytesPerSample;
-    int SecondaryBufferSize;
-    real32 tSine;
-    int LatencySampleCount;
-} win32_sound_output;
+#include "win32_handmade.h"
 
 // todo: global for now
 global_variable bool32 GlobalRunning;
@@ -581,17 +554,10 @@ WinMain(
             // and use it forever as it is not shared
             HDC DeviceContext = GetDC(Window);
 
-            // graphics test
-            int XOffset = 0;
-            int YOffset = 0;
-
             win32_sound_output SoundOutput = {};
 
             SoundOutput.SamplesPerSecond = 48000;
-            SoundOutput.ToneHz = 256;
-            SoundOutput.ToneVolume = 3000;
             SoundOutput.RunningSampleIndex = 0;
-            SoundOutput.WavePeriod = SoundOutput.SamplesPerSecond/SoundOutput.ToneHz;
             SoundOutput.BytesPerSample = sizeof(int16)*2;
             SoundOutput.SecondaryBufferSize = SoundOutput.SamplesPerSecond*SoundOutput.BytesPerSample;
             SoundOutput.LatencySampleCount = SoundOutput.SamplesPerSecond/15;
@@ -658,16 +624,6 @@ WinMain(
 
                         int16 StickX = Pad->sThumbLX;
                         int16 StickY = Pad->sThumbLY;
-
-                        // TODO: add proper deadzone handling (check xinput library for values)
-                        XOffset += StickX / 4096;
-                        YOffset += StickY / 4096;
-
-                        if(AButton)
-                        {
-                            SoundOutput.ToneHz = 512;
-                            SoundOutput.WavePeriod = SoundOutput.SamplesPerSecond/SoundOutput.ToneHz;
-                        }
                     }
                     else
                     {
@@ -715,7 +671,7 @@ WinMain(
                 Buffer.Width = GlobalBackBuffer.Width;
                 Buffer.Height = GlobalBackBuffer.Height;
                 Buffer.Pitch = GlobalBackBuffer.Pitch;
-                GameUpdateAndRender(&Buffer, XOffset, YOffset, &SoundBuffer, SoundOutput.ToneHz);
+                GameUpdateAndRender(&Buffer, &SoundBuffer);
 
                 // DirectSound output test
 
