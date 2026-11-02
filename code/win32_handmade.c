@@ -504,6 +504,17 @@ Win32FillSoundBuffer(
     }
 }
 
+internal void
+Win32ProcessXInputDigitalButton(
+    DWORD XInputButtonState,
+    game_button_state *OldState,
+    DWORD ButtonBit,
+    game_button_state *NewState)
+{
+    NewState->EndedDown = (XInputButtonState & ButtonBit) == ButtonBit;
+    NewState->HalfTransitionCount = (OldState->EndedDown != NewState->EndedDown) ? 1 : 0;
+}
+
 int CALLBACK
 WinMain(
     HINSTANCE Instance,
@@ -582,6 +593,9 @@ WinMain(
 
             while(GlobalRunning) {
                 MSG Message;
+
+                game_input Input = {};
+
                 while(PeekMessage(
                     &Message,
                     0,        // any window which belongs to us
@@ -613,6 +627,10 @@ WinMain(
                         bool32 Down = (Pad->wButtons & XINPUT_GAMEPAD_DPAD_DOWN);
                         bool32 Left = (Pad->wButtons & XINPUT_GAMEPAD_DPAD_LEFT);
                         bool32 Right = (Pad->wButtons & XINPUT_GAMEPAD_DPAD_RIGHT);
+
+                        int16 StickX = Pad->sThumbLX;
+                        int16 StickY = Pad->sThumbLY;
+
                         bool32 Start = (Pad->wButtons & XINPUT_GAMEPAD_START);
                         bool32 Bacl = (Pad->wButtons & XINPUT_GAMEPAD_BACK);
                         bool32 LeftShoulder = (Pad->wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER);
@@ -621,9 +639,6 @@ WinMain(
                         bool32 BButton = (Pad->wButtons & XINPUT_GAMEPAD_B);
                         bool32 XButton = (Pad->wButtons & XINPUT_GAMEPAD_X);
                         bool32 YButton = (Pad->wButtons & XINPUT_GAMEPAD_Y);
-
-                        int16 StickX = Pad->sThumbLX;
-                        int16 StickY = Pad->sThumbLY;
                     }
                     else
                     {
@@ -671,7 +686,7 @@ WinMain(
                 Buffer.Width = GlobalBackBuffer.Width;
                 Buffer.Height = GlobalBackBuffer.Height;
                 Buffer.Pitch = GlobalBackBuffer.Pitch;
-                GameUpdateAndRender(&Buffer, &SoundBuffer);
+                GameUpdateAndRender(&Input, &Buffer, &SoundBuffer);
 
                 // DirectSound output test
 
