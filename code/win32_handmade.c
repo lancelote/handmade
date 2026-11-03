@@ -586,6 +586,10 @@ WinMain(
             // TODO: pool with bitmap VirtualAlloc
             int16 *Samples = (int16 *)VirtualAlloc(0, SoundOutput.SecondaryBufferSize, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
 
+            game_input Input[2] = {};
+            game_input *NewInput = &Input[0];
+            game_input *OldInput = &Input[1];
+
             LARGE_INTEGER LastCounter;
             QueryPerformanceCounter(&LastCounter);
 
@@ -593,8 +597,6 @@ WinMain(
 
             while(GlobalRunning) {
                 MSG Message;
-
-                game_input Input = {};
 
                 while(PeekMessage(
                     &Message,
@@ -614,8 +616,17 @@ WinMain(
                 }
 
                 // TODO: should we poll this more frequently?
-                for(DWORD ControllerIndex = 0; ControllerIndex < XUSER_MAX_COUNT; ++ControllerIndex)
+                int MaxControllerCount = XUSER_MAX_COUNT;
+                if(MaxControllerCount > ArrayCount(NewInput->Controllers))
                 {
+                    MaxControllerCount = ArrayCount(NewInput->Controllers);
+                }
+
+                for(DWORD ControllerIndex = 0; ControllerIndex < MaxControllerCount; ++ControllerIndex)
+                {
+                    game_controller_input *OldController = &OldInput->Controllers[ControllerIndex];
+                    game_controller_input *NewController = &NewInput->Controllers[ControllerIndex];
+
                     XINPUT_STATE ControllerState;
                     if(XInputGetState(ControllerIndex, &ControllerState) == ERROR_SUCCESS)
                     {
@@ -631,14 +642,36 @@ WinMain(
                         int16 StickX = Pad->sThumbLX;
                         int16 StickY = Pad->sThumbLY;
 
-                        bool32 Start = (Pad->wButtons & XINPUT_GAMEPAD_START);
-                        bool32 Bacl = (Pad->wButtons & XINPUT_GAMEPAD_BACK);
-                        bool32 LeftShoulder = (Pad->wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER);
-                        bool32 RightShoulder = (Pad->wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER);
-                        bool32 AButton = (Pad->wButtons & XINPUT_GAMEPAD_A);
-                        bool32 BButton = (Pad->wButtons & XINPUT_GAMEPAD_B);
-                        bool32 XButton = (Pad->wButtons & XINPUT_GAMEPAD_X);
-                        bool32 YButton = (Pad->wButtons & XINPUT_GAMEPAD_Y);
+                        Win32ProcessXInputDigitalButton(
+                            Pad->wButtons,
+                            &OldController->Down,
+                            XINPUT_GAMEPAD_A,
+                            &NewController->Down);
+                        Win32ProcessXInputDigitalButton(
+                            Pad->wButtons,
+                            &OldController->Right,
+                            XINPUT_GAMEPAD_B,
+                            &NewController->Right);
+                        Win32ProcessXInputDigitalButton(
+                            Pad->wButtons,
+                            &OldController->Left,
+                            XINPUT_GAMEPAD_X,
+                            &NewController->Left);
+                        Win32ProcessXInputDigitalButton(
+                            Pad->wButtons,
+                            &OldController->Up,
+                            XINPUT_GAMEPAD_Y,
+                            &NewController->Up);
+                        Win32ProcessXInputDigitalButton(
+                            Pad->wButtons,
+                            &OldController->LeftShoulder,
+                            XINPUT_GAMEPAD_LEFT_SHOULDER,
+                            &NewController->LeftShoulder);
+                        Win32ProcessXInputDigitalButton(
+                            Pad->wButtons,
+                            &OldController->RightShoulder,
+                            XINPUT_GAMEPAD_RIGHT_SHOULDER,
+                            &NewController->RightShoulder);
                     }
                     else
                     {
@@ -686,7 +719,7 @@ WinMain(
                 Buffer.Width = GlobalBackBuffer.Width;
                 Buffer.Height = GlobalBackBuffer.Height;
                 Buffer.Pitch = GlobalBackBuffer.Pitch;
-                GameUpdateAndRender(&Input, &Buffer, &SoundBuffer);
+                GameUpdateAndRender(NewInput, &Buffer, &SoundBuffer);
 
                 // DirectSound output test
 
@@ -725,6 +758,10 @@ WinMain(
 
                 LastCounter = EndCounter;
                 LastCycleCount = EndCycleCount;
+
+                game_input *Temp = NewInput;
+                NewInput = OldInput;
+                OldInput = Temp;
             }
         } else {
             // TODO: logging
