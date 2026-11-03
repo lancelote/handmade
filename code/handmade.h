@@ -1,6 +1,6 @@
 #if !defined(HANDMADE_H)
 
-#define ArrayCount(Array) (sizeof(Array) / sizeof(Array[0]))
+#define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
 
 /*
   services that the platform layer provides to the game
