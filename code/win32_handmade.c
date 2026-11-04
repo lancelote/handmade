@@ -642,7 +642,12 @@ WinMain(
                         NewController->isAnalog = true;
                         NewController->StartX = OldController->EndX;
                         NewController->StartY = OldController->EndY;
+                        
+                        // TODO: process dead zone
+                        // XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE
+                        // XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE
 
+                        // TODO: Min/Max macros
                         real32 X;
                         if(Pad->sThumbLX < 0)
                         {
