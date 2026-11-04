@@ -639,7 +639,7 @@ WinMain(
                         bool32 Left = (Pad->wButtons & XINPUT_GAMEPAD_DPAD_LEFT);
                         bool32 Right = (Pad->wButtons & XINPUT_GAMEPAD_DPAD_RIGHT);
 
-                        NewController->isAnalog = true;
+                        NewController->IsAnalog = true;
                         NewController->StartX = OldController->EndX;
                         NewController->StartY = OldController->EndY;
                         
