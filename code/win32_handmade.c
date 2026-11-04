@@ -639,8 +639,31 @@ WinMain(
                         bool32 Left = (Pad->wButtons & XINPUT_GAMEPAD_DPAD_LEFT);
                         bool32 Right = (Pad->wButtons & XINPUT_GAMEPAD_DPAD_RIGHT);
 
-                        int16 StickX = Pad->sThumbLX;
-                        int16 StickY = Pad->sThumbLY;
+                        NewController->isAnalog = true;
+                        NewController->StartX = OldController->EndX;
+                        NewController->StartY = OldController->EndY;
+
+                        real32 X;
+                        if(Pad->sThumbLX < 0)
+                        {
+                            X = (real32)Pad->sThumbLX / 32768.0f;
+                        }
+                        else
+                        {
+                            X = (real32)Pad->sThumbLX / 32767.0f;
+                        }
+                        NewController->MinX = NewController->MaxX = NewController->EndX = X;
+
+                        real32 Y;
+                        if(Pad->sThumbLY < 0)
+                        {
+                            Y = (real32)Pad->sThumbLY / 32768.0f;
+                        }
+                        else
+                        {
+                            Y = (real32)Pad->sThumbLY / 32767.0f;
+                        }
+                        NewController->MinY = NewController->MaxY = NewController->EndY = Y;
 
                         Win32ProcessXInputDigitalButton(
                             Pad->wButtons,
