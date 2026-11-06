@@ -4,7 +4,8 @@
 
 - [ ] Handmade Hero
   - [ ] ...
-  - [ ] Day 013: Platform-independent User Input
+  - [ ] Day 014: Platform-independent Game Memory
+  - [x] Day 013: Platform-independent User Input
   - [x] Day 012: Platform-independent Sound Output
   - [x] Day 011: The Basics of Platform API Design
   - [x] Day 010: QueryPerformanceCounter and RDTSC
