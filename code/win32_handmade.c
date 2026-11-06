@@ -648,6 +648,7 @@ WinMain(
                         // XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE
 
                         // TODO: Min/Max macros
+                        // TODO: collapse to a single function
                         real32 X;
                         if(Pad->sThumbLX < 0)
                         {
