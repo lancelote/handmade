@@ -1,5 +1,15 @@
 #if !defined(HANDMADE_H)
 
+#if DEBUG
+#define Assert(Expression) if(!(Expression)) {*(int *)0 = 0;}
+#else
+#define Assert(Expression)
+#endif
+
+#define Kilobytes(Value) ((Value) * 1024)
+#define Megabytes(Value) (Kilobytes(Value) * 1024)
+#define Gigabytes(Value) (Megabytes(Value) * 1024)
+
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
 
 /*
@@ -78,8 +88,27 @@ typedef struct game_input
     game_controller_input Controllers[4];
 } game_input;
 
+typedef struct game_memory
+{
+    bool32 IsInitialized;
+
+    uint64 PermanentStorageSize;
+    void *PermanentStorage; // required to be cleared to zero at startup
+
+    uint64 TransientStorageSize;
+    void *TransientStorage; // required to be cleared to zero at startup
+} game_memory;
+
+typedef struct game_state
+{
+    int ToneHz;
+    int GreenOffset;
+    int BlueOffset;
+} game_state;
+
 internal void
 GameUpdateAndRender(
+    game_memory *Memory,
     game_input *Input,
     game_offscreen_buffer *Buffer,
     game_sound_output_buffer *SoundBuffer);
