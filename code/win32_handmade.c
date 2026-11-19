@@ -590,20 +590,25 @@ WinMain(
                 MEM_RESERVE|MEM_COMMIT,
                 PAGE_READWRITE);
 
+#if HANDMADE_INTERNAL
+            LPVOID BaseAddress = 0;
+#else
+            LPVOID BaseAddress = Terabytes((uint64)2);
+#endif
+
             game_memory GameMemory = {};
             GameMemory.PermanentStorageSize = Megabytes(64);
+            GameMemory.TransientStorageSize = Gigabytes((uint64)4);
+
+            uint64 TotalSize = GameMemory.PermanentStorageSize + GameMemory.TransientStorageSize;
+
             GameMemory.PermanentStorage = VirtualAlloc(
-                0,
-                GameMemory.PermanentStorageSize,
+                BaseAddress,
+                TotalSize,
                 MEM_RESERVE|MEM_COMMIT,
                 PAGE_READWRITE);
 
-            GameMemory.TransientStorageSize = Gigabytes((uint64)4);
-            GameMemory.TransientStorage = VirtualAlloc(
-                0,
-                GameMemory.TransientStorageSize,
-                MEM_RESERVE|MEM_COMMIT,
-                PAGE_READWRITE);
+            GameMemory.TransientStorage = (uint8 *)GameMemory.PermanentStorage + GameMemory.PermanentStorageSize;
 
             if(Samples && GameMemory.PermanentStorage && GameMemory.TransientStorage)
             {
