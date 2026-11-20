@@ -591,9 +591,9 @@ WinMain(
                 PAGE_READWRITE);
 
 #if HANDMADE_INTERNAL
-            LPVOID BaseAddress = 0;
+            LPVOID BaseAddress = (LPVOID)Terabytes((uint64)2);
 #else
-            LPVOID BaseAddress = Terabytes((uint64)2);
+            LPVOID BaseAddress = 0;
 #endif
 
             game_memory GameMemory = {};
