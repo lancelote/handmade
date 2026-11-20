@@ -96,6 +96,7 @@ typedef struct game_controller_input
 
 typedef struct game_input
 {
+    // TODO: insert clock values here
     game_controller_input Controllers[4];
 } game_input;
 
