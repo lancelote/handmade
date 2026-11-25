@@ -4,7 +4,8 @@
 
 - [ ] Handmade Hero
   - [ ] ...
-  - [ ] Day 014: Platform-independent Game Memory
+  - [ ] Day 015: Platform-independent Debug File I/O
+  - [x] Day 014: Platform-independent Game Memory
   - [x] Day 013: Platform-independent User Input
   - [x] Day 012: Platform-independent Sound Output
   - [x] Day 011: The Basics of Platform API Design
