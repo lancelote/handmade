@@ -591,14 +591,14 @@ WinMain(
                 PAGE_READWRITE);
 
 #if HANDMADE_INTERNAL
-            LPVOID BaseAddress = (LPVOID)Terabytes((uint64)2);
+            LPVOID BaseAddress = (LPVOID)Terabytes(2);
 #else
             LPVOID BaseAddress = 0;
 #endif
 
             game_memory GameMemory = {};
             GameMemory.PermanentStorageSize = Megabytes(64);
-            GameMemory.TransientStorageSize = Gigabytes((uint64)4);
+            GameMemory.TransientStorageSize = Gigabytes(4);
 
             uint64 TotalSize = GameMemory.PermanentStorageSize + GameMemory.TransientStorageSize;
 
